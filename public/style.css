@@ -328,7 +328,7 @@ header:hover .brandtext { text-shadow: 0 0 14px rgba(255, 255, 255, .45); }
 
 /* image grid cells zoom on hover */
 .imgcell { transition: transform .18s cubic-bezier(.2, .7, .3, 1), border-color .18s, box-shadow .18s; }
-.imgcell:hover { transform: scale(1.7); z-index: 30; box-shadow: 0 12px 32px rgba(12, 37, 71, .28); }
+.imgcell:hover { transform: scale(1.18); z-index: 30; box-shadow: 0 6px 18px rgba(12, 37, 71, .2); }
 .imgs:has(.imgcell:hover) { z-index: 30; position: relative; }
 
 /* buttons, tabs, inputs */
@@ -376,5 +376,11 @@ details.learn summary:hover { padding-left: 8px; }
 .copycat:hover { color: var(--navy); background: var(--navy-soft); transform: scale(1.25); }
 .copycat.copied { color: #fff; background: var(--navy); transform: scale(1.15); }
 
+.rotcard {
+  display: block; width: 100%; background: none; border: none; padding: 0;
+  transform-origin: top center;
+}
+.rotcard .card { margin-bottom: 0; animation: none; }
+.rotcard .card:hover { transform: none; }
 .rotitem b { font-family: var(--mono); color: var(--navy); font-size: 15px; }
 .rotdesc { color: var(--dim); font-size: 13px; max-width: 340px; overflow: hidden; text-overflow: ellipsis; }

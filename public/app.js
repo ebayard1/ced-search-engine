@@ -54,23 +54,26 @@ function bumpItem(id, cat, desc, mfr) {
   localStorage.setItem(ITEMS_KEY, JSON.stringify(Object.fromEntries(keep)));
 }
 let rotTimer = null;
-function renderRecent() {
+async function renderRecent() {
   clearInterval(rotTimer);
-  // your most-used PARTS — the stack slowly cycles, shrinking + fading toward the bottom
-  const list = Object.values(getItemHits()).sort((a, b) => b.count - a.count || b.t - a.t).slice(0, 7);
-  if (!list.length) { $('#results').innerHTML = ''; return; }
-  const ROW = 50;
+  // your most-used PARTS as full cards — the stack slowly cycles, shrinking + fading toward the bottom
+  const hits = Object.entries(getItemHits()).sort((a, b) => b[1].count - a[1].count || b[1].t - a[1].t).slice(0, 6);
+  if (!hits.length) { $('#results').innerHTML = ''; return; }
+  let full = [];
+  try { full = (await api('/api/items?ids=' + encodeURIComponent(hits.map(([id]) => id).join(',')))).items; } catch {}
+  if (qInput.value.trim() || mfrSel.value) return; // user started typing while we fetched
+  if (!full.length) { $('#results').innerHTML = ''; return; }
+  const ROW = 104;
   $('#results').innerHTML = `<div class="recent">
     <div class="recenthead">Your most-used parts
       <button class="btn tiny" id="clearrecent">clear</button></div>
-    <div class="rotstack" style="height:${list.length * ROW + 14}px">${list.map((r) => `
-      <button class="rotitem" data-q="${esc(r.cat)}">
-        <b>${esc(r.cat)}</b><span class="rotdesc">${esc((r.desc || '').slice(0, 44))}</span>${r.mfr ? `<span class="rmfr">${esc(r.mfr)}</span>` : ''}
-      </button>`).join('')}
+    <div class="rotstack" style="height:${full.length * ROW + 30}px">${full.map((r) => `
+      <div class="rotitem rotcard" data-q="${esc(r.cat)}">${card(r)}</div>`).join('')}
     </div></div>`;
   $('#clearrecent').addEventListener('click', () => { localStorage.removeItem(ITEMS_KEY); renderRecent(); });
   const items = $$('.rotitem');
-  items.forEach((b) => b.addEventListener('click', () => {
+  items.forEach((b) => b.addEventListener('click', (ev) => {
+    if (ev.target.closest('a,button,input,textarea')) return;
     qInput.value = b.dataset.q;
     mfrSel.value = '';
     doSearch();
@@ -80,8 +83,8 @@ function renderRecent() {
   function place() {
     order.forEach((elIdx, pos) => {
       const el = items[elIdx];
-      el.style.transform = `translateY(${pos * ROW}px) scale(${Math.max(.55, 1 - pos * 0.07)})`;
-      el.style.opacity = String(Math.max(.22, 1 - pos * 0.14));
+      el.style.transform = `translateY(${pos * ROW}px) scale(${Math.max(.7, 1 - pos * 0.05)})`;
+      el.style.opacity = String(Math.max(.18, 1 - pos * 0.17));
       el.style.zIndex = String(30 - pos);
     });
   }
@@ -91,7 +94,7 @@ function renderRecent() {
       if (!document.body.contains(items[0])) { clearInterval(rotTimer); return; }
       order = [...order.slice(1), order[0]];
       place();
-    }, 3200);
+    }, 3600);
   }
 }
 

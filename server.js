@@ -110,6 +110,11 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, out);
     }
 
+    if (u.pathname === '/api/items') {
+      const ids = (u.searchParams.get('ids') || '').split(',').filter(Boolean).slice(0, 12);
+      return json(res, 200, { items: ids.map((id) => engine.resultFor(id)).filter(Boolean) });
+    }
+
     if (u.pathname === '/api/item' && req.method === 'GET') {
       const it = engine.byId.get(u.searchParams.get('id'));
       if (!it) return json(res, 404, { error: 'unknown id' });
