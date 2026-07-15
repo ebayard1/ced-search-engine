@@ -351,16 +351,9 @@ details.learn summary:hover { padding-left: 8px; }
 
 /* rotating "top searches" stack on the empty screen:
    rows shrink and fade as they sink toward the bottom, slowly cycling */
-.rotstack { position: relative; margin-top: 4px; }
-.rotitem {
-  position: absolute; left: 0; display: inline-flex; align-items: center; gap: 8px;
-  background: var(--panel2); border: 1px solid var(--line); color: var(--text);
-  border-radius: 22px; padding: 8px 18px; font-size: 15px; cursor: pointer;
-  transform-origin: left center; white-space: nowrap;
-  transition: transform .95s cubic-bezier(.25, .8, .25, 1), opacity .95s ease;
-  will-change: transform, opacity;
-}
-.rotitem:hover { border-color: var(--navy); color: var(--navy); background: #fff; }
+.rotstack { margin-top: 4px; }
+.rotitem { display: block; cursor: pointer; }
+.rotitem + .rotitem { margin-top: 8px; }
 .rotitem .rmfr { color: var(--red-dark); font-size: 11px; font-weight: 700; }
 
 /* motion is a courtesy, not a requirement */
@@ -377,11 +370,6 @@ details.learn summary:hover { padding-left: 8px; }
 .copycat:hover { color: var(--navy); background: var(--navy-soft); transform: scale(1.25); }
 .copycat.copied { color: #fff; background: var(--navy); transform: scale(1.15); }
 
-.rotcard {
-  display: block; width: 100%; background: none; border: none; padding: 0;
-  transform-origin: top center;
-}
-.rotcard .card { margin-bottom: 0; animation: none; }
-.rotcard .card:hover { transform: none; }
+.rotcard .card { margin-bottom: 0; }
 .rotitem b { font-family: var(--mono); color: var(--navy); font-size: 15px; }
 .rotdesc { color: var(--dim); font-size: 13px; max-width: 340px; overflow: hidden; text-overflow: ellipsis; }

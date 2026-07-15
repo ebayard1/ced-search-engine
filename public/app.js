@@ -53,53 +53,53 @@ function bumpItem(id, cat, desc, mfr) {
   const keep = Object.entries(hits).sort((a, b) => b[1].t - a[1].t).slice(0, 60);
   localStorage.setItem(ITEMS_KEY, JSON.stringify(Object.fromEntries(keep)));
 }
-let rotTimer = null;
+// ---- gentle auto-scroll through the full most-used list (stops the moment you take over) ----
+let driftRaf = null;
+let driftDir = 1;
+function stopDrift() {
+  if (driftRaf) { cancelAnimationFrame(driftRaf); driftRaf = null; }
+}
+['wheel', 'touchstart', 'mousedown', 'keydown'].forEach((ev) =>
+  window.addEventListener(ev, stopDrift, { passive: true }));
+function startDrift() {
+  stopDrift();
+  driftDir = 1;
+  const step = () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    if (max > 4) {
+      window.scrollBy(0, 0.45 * driftDir);
+      if (window.scrollY >= max - 1) driftDir = -1;   // drift back up, ping-pong
+      else if (window.scrollY <= 0) driftDir = 1;
+    }
+    driftRaf = requestAnimationFrame(step);
+  };
+  driftRaf = requestAnimationFrame(step);
+}
+
 async function renderRecent() {
-  clearInterval(rotTimer);
-  // your most-used PARTS as full cards — the stack slowly cycles, shrinking + fading toward the bottom
-  const hits = Object.entries(getItemHits()).sort((a, b) => b[1].count - a[1].count || b[1].t - a[1].t).slice(0, 6);
+  stopDrift();
+  // every part you've used, most-used first — full cards, full list, no cap
+  const hits = Object.entries(getItemHits()).sort((a, b) => b[1].count - a[1].count || b[1].t - a[1].t);
   if (!hits.length) { $('#results').innerHTML = ''; return; }
   let full = [];
   try { full = (await api('/api/items?ids=' + encodeURIComponent(hits.map(([id]) => id).join(',')))).items; } catch {}
   if (qInput.value.trim() || mfrSel.value) return; // user started typing while we fetched
   if (!full.length) { $('#results').innerHTML = ''; return; }
-  const ROW = 104;
   $('#results').innerHTML = `<div class="recent">
     <div class="recenthead">Your most-used parts
       <button class="btn tiny" id="clearrecent">clear</button></div>
-    <div class="rotstack" style="height:${full.length * ROW + 30}px">${full.map((r) => `
+    <div class="rotstack">${full.map((r) => `
       <div class="rotitem rotcard" data-q="${esc(r.cat)}">${card(r)}</div>`).join('')}
     </div></div>`;
   $('#clearrecent').addEventListener('click', () => { localStorage.removeItem(ITEMS_KEY); renderRecent(); });
-  const items = $$('.rotitem');
-  items.forEach((b) => b.addEventListener('click', (ev) => {
+  $$('.rotitem').forEach((b) => b.addEventListener('click', (ev) => {
     if (ev.target.closest('a,button,input,textarea')) return;
     qInput.value = b.dataset.q;
     mfrSel.value = '';
     doSearch();
     qInput.focus();
   }));
-  let order = items.map((_, i) => i);
-  function place() {
-    const last = items.length - 1;
-    order.forEach((elIdx, pos) => {
-      const el = items[elIdx];
-      // full strength all the way down — only the very bottom card tapers off
-      const scale = pos === last ? .94 : 1 - pos * .008;
-      const opacity = pos === last ? .35 : 1;
-      el.style.transform = `translateY(${pos * ROW}px) scale(${scale})`;
-      el.style.opacity = String(opacity);
-      el.style.zIndex = String(30 - pos);
-    });
-  }
-  place();
-  if (items.length > 2) {
-    rotTimer = setInterval(() => {
-      if (!document.body.contains(items[0])) { clearInterval(rotTimer); return; }
-      order = [...order.slice(1), order[0]];
-      place();
-    }, 3600);
-  }
+  setTimeout(() => { if ($('.rotstack') && !qInput.value.trim()) startDrift(); }, 1800);
 }
 
 // keep the sticky search bar pinned right below the header, whatever its height
@@ -264,7 +264,7 @@ const RENDER_CHUNK = 80;
 function renderResults(results, q, mfr) {
   const el = $('#results');
   if (!results.length) { el.innerHTML = '<p class="note">Nothing matched. Try the trade name (“sealtight”, “minis”, “jbox”) or a catalog # fragment.</p>'; return; }
-  clearInterval(rotTimer);
+  stopDrift();
   const head = `<div class="resultcount">${results.length} related part${results.length === 1 ? '' : 's'}${mfr ? ` · ${esc(mfr)}` : ''}</div>`;
   let shown = Math.min(RENDER_CHUNK, results.length);
   el.innerHTML = head + results.slice(0, shown).map(card).join('');
