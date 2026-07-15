@@ -284,7 +284,8 @@ details.learn .kbody { margin-bottom: 12px; }
   animation: cardIn .38s cubic-bezier(.2, .7, .3, 1) both;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-.card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(12, 37, 71, .13); }
+.card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(12, 37, 71, .13); z-index: 50; }
+.card:has(.itemphoto:hover) { z-index: 60; } /* zoomed part photo always shows through */
 @keyframes cardIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
 /* text wakes up under the mouse */
@@ -328,6 +329,7 @@ header:hover .brandtext { text-shadow: 0 0 14px rgba(255, 255, 255, .45); }
 /* image grid cells zoom on hover */
 .imgcell { transition: transform .18s cubic-bezier(.2, .7, .3, 1), border-color .18s, box-shadow .18s; }
 .imgcell:hover { transform: scale(1.7); z-index: 30; box-shadow: 0 12px 32px rgba(12, 37, 71, .28); }
+.imgs:has(.imgcell:hover) { z-index: 30; position: relative; }
 
 /* buttons, tabs, inputs */
 .tab { transition: background .2s ease, color .2s ease, transform .16s ease; }
