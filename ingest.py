@@ -11,11 +11,6 @@ import json
 import os
 import sys
 
-try:
-    import openpyxl
-except ImportError:
-    sys.exit("openpyxl is required:  pip3 install --user openpyxl")
-
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIN_PATH = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser("~/Downloads/Bin_and_Lot_Quantity.xlsx")
 LPF_PATH = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser("~/Downloads/lpf.xlsx")
@@ -23,6 +18,10 @@ OUT_PATH = os.path.join(HERE, "data", "catalog.json")
 
 
 def rows_of(path):
+    try:
+        import openpyxl
+    except ImportError:
+        sys.exit("openpyxl is required:  pip3 install --user openpyxl")
     wb = openpyxl.load_workbook(path, read_only=True)
     rows = list(wb.active.iter_rows(values_only=True))
     return rows[1:]
@@ -36,11 +35,18 @@ def s(v):
     return str(v).strip()
 
 
-def main():
-    # --- price file: master catalog (mfr, cat#, desc, upc) ---
+def build_catalog(lpf_rows, bin_rows):
+    """Join the price-file master list with bin/lot rows.
+
+    Returns (items dict, stats dict). Pure so it's unit-testable with
+    in-memory rows. Bin rows whose (mfr, cat) isn't in the price file fall
+    back to any price-file item sharing the catalog number; when several
+    manufacturers share it, the join is ambiguous and gets reported —
+    stock may be attached to the wrong manufacturer.
+    """
     items = {}          # key: (mfr, cat)
     by_cat = {}         # cat -> list of keys, for joining bin rows
-    for r in rows_of(LPF_PATH):
+    for r in lpf_rows:
         mfr, cat, desc, upc = s(r[0]), s(r[1]), s(r[2]), s(r[3])
         if not cat:
             continue
@@ -49,9 +55,9 @@ def main():
                       "desc": desc, "upc": upc, "bins": [], "lots": []}
         by_cat.setdefault(cat, []).append(key)
 
-    # --- bin/lot file: locations & quantities ---
     joined = created = 0
-    for r in rows_of(BIN_PATH):
+    ambiguous = []
+    for r in bin_rows:
         mfr, cat, desc, zone, bin_, bin_qty, lot, lot_qty = (
             s(r[0]), s(r[1]), s(r[2]), s(r[3]), s(r[4]), r[5], s(r[6]), r[7])
         if not cat:
@@ -60,6 +66,13 @@ def main():
         if key not in items:
             alt = by_cat.get(cat)
             if alt:
+                if len(alt) > 1:
+                    ambiguous.append({
+                        "binMfr": mfr, "cat": cat, "binDesc": desc,
+                        "candidates": [f"{m}|{c}" for m, c in alt],
+                        "joinedTo": f"{alt[0][0]}|{alt[0][1]}",
+                        "bin": bin_, "qty": bin_qty if isinstance(bin_qty, (int, float)) else 0,
+                    })
                 key = alt[0]
             else:
                 items[key] = {"id": f"{mfr}|{cat}", "mfr": mfr, "cat": cat,
@@ -75,13 +88,38 @@ def main():
                                "qty": int(lot_qty) if isinstance(lot_qty, (int, float)) else 0})
         joined += 1
 
+    return items, {"joined": joined, "created": created, "ambiguous": ambiguous}
+
+
+def main():
+    items, stats = build_catalog(rows_of(LPF_PATH), rows_of(BIN_PATH))
+
     out = sorted(items.values(), key=lambda x: (x["mfr"], x["cat"]))
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w") as f:
         json.dump({"items": out}, f)
+
+    from datetime import datetime, timezone
+    report = {"generatedAt": datetime.now(timezone.utc).isoformat(),
+              "joined": stats["joined"], "created": stats["created"],
+              "ambiguous": stats["ambiguous"]}
+    report_path = os.path.join(HERE, "data", "ingest-report.json")
+    with open(report_path, "w") as f:
+        json.dump(report, f, indent=1)
+
     stocked = sum(1 for i in out if i["bins"])
     print(f"catalog.json written: {len(out)} items "
-          f"({stocked} with bin locations, {created} bin-only items, {joined} bin rows merged)")
+          f"({stocked} with bin locations, {stats['created']} bin-only items, "
+          f"{stats['joined']} bin rows merged)")
+    amb = stats["ambiguous"]
+    if amb:
+        print(f"\nWARNING: {len(amb)} ambiguous joins — stock may be attached to the "
+              f"wrong manufacturer (full list in data/ingest-report.json):")
+        for a in amb[:10]:
+            print(f"  bin row {a['binMfr']} {a['cat']} -> joined to {a['joinedTo']} "
+                  f"(candidates: {', '.join(a['candidates'])})")
+        if len(amb) > 10:
+            print(f"  … and {len(amb) - 10} more")
 
 
 if __name__ == "__main__":

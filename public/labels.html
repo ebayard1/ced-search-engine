@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shelf Labels</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { font: 14px/1.35 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #111; background: #fff; margin: 18px; }
+  .toolbar { margin-bottom: 14px; }
+  button { font: inherit; padding: 6px 14px; cursor: pointer; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+  .label {
+    border: 1px dashed #999; border-radius: 6px; padding: 10px 12px 6px;
+    break-inside: avoid; text-align: center;
+  }
+  .cat { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 22px; font-weight: 800; }
+  .desc { font-size: 13px; margin: 2px 0 4px; }
+  .bin { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 15px; font-weight: 700; }
+  .mfr { color: #555; font-size: 11px; letter-spacing: .06em; }
+  svg { max-width: 100%; height: auto; }
+  @media print { .toolbar { display: none; } body { margin: 0; } .label { border-color: #ccc; } }
+</style>
+</head>
+<body>
+<div class="toolbar"><button onclick="window.print()">🖨 Print labels</button> <a href="/">← back to search</a></div>
+<div class="grid" id="grid">loading…</div>
+<script src="/code128.js"></script>
+<script>
+'use strict';
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+(async function () {
+  const ids = (new URLSearchParams(location.search).get('ids') || '').split(',').filter(Boolean);
+  const grid = document.getElementById('grid');
+  if (!ids.length) { grid.textContent = 'no item ids'; return; }
+  let items;
+  try {
+    const res = await fetch('/api/items?ids=' + encodeURIComponent(ids.join(',')));
+    items = (await res.json()).items;
+  } catch (e) { grid.textContent = 'failed: ' + e.message; return; }
+  grid.innerHTML = items.map((it) => {
+    let bar = '';
+    try { bar = code128.code128Svg(it.cat, { height: 40 }).svg; } catch {}
+    const bin = (it.bins || []).find((b) => b.qty > 0);
+    return `<div class="label">
+      <div class="mfr">${esc(it.mfrName || it.mfr)}</div>
+      <div class="cat">${esc(it.cat)}</div>
+      <div class="desc">${esc(it.desc)}</div>
+      ${bar}
+      <div class="bin">${esc(bin ? bin.bin : '')}</div>
+    </div>`;
+  }).join('');
+})();
+</script>
+</body>
+</html>

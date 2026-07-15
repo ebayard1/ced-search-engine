@@ -20,9 +20,13 @@
     <button class="tab" data-tab="cheat">Cheat Sheet</button>
     <button class="tab" data-tab="learn">Learn</button>
     <button class="tab" data-tab="rules">Counter Rules</button>
+    <button class="tab" data-tab="calc">Calc</button>
+    <button class="tab" data-tab="missed">Missed <span id="missedbadge" class="badge" hidden></span></button>
+    <button class="tab" data-tab="suggest" id="suggesttab" hidden>Suggestions <span id="pendingbadge" class="badge" hidden></span></button>
   </nav>
   <div class="meta" id="meta"></div>
 </header>
+<div id="banners"></div>
 
 <main id="tab-search" class="tabpane active">
   <div class="searchwrap">
@@ -38,6 +42,7 @@
 
 <main id="tab-cheat" class="tabpane">
   <p class="note">Your counter cheat sheet, digitized. These rules also power the search — matching any term boosts its catalog pattern. Filter:</p>
+  <div class="row noprint"><button class="btn tiny" onclick="window.print()">🖨 Print cheat sheet</button></div>
   <input id="cheatfilter" type="search" placeholder="filter cheat sheet…" autocomplete="off">
   <div id="cheatlist"></div>
 </main>
@@ -52,6 +57,41 @@
   <ol id="ruleslist"></ol>
 </main>
 
+<main id="tab-calc" class="tabpane">
+  <p class="note">Trade calculators — NEC 2023 values. Double-check against the code book for permits and inspections.</p>
+  <div id="calcpanes"></div>
+  <h3 class="calchead">NEMA plug &amp; receptacle chart</h3>
+  <div id="nemachart"></div>
+</main>
+
+<main id="tab-missed" class="tabpane">
+  <p class="note">Searches that found nothing — teach these as keywords on an item, or as rules in <code>jargon.json</code> / <code>synonyms.json</code>.</p>
+  <div class="row">
+    <button class="btn tiny" id="clearmissed">clear all</button>
+    <button class="btn tiny aionly" id="aisuggest" hidden>✨ Suggest fixes (AI)</button>
+    <span class="note" id="aisuggestout"></span>
+  </div>
+  <div id="missedlist"></div>
+</main>
+
+<main id="tab-suggest" class="tabpane">
+  <p class="note">AI-drafted suggestions. Nothing is saved until you approve it here — approved entries merge into the data files and reload live.</p>
+  <div id="pendinglist"></div>
+</main>
+
+<div id="chatdock" hidden>
+  <button id="chatpill">💬 Ask</button>
+  <div id="chatpanel" hidden>
+    <div id="chatlog"></div>
+    <form id="chatform">
+      <input id="chatinput" autocomplete="off" placeholder='Ask anything: "what do we have for 3/4 sealtight 90s?"'>
+      <button class="btn primary">Send</button>
+    </form>
+  </div>
+</div>
+
+<div id="tray"></div>
+<script src="/calc.js"></script>
 <script src="/app.js"></script>
 </body>
 </html>
