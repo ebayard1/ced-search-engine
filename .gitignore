@@ -8,5 +8,13 @@ data/counter-rules.json
 # Personal state (your edits + web cache) — local only
 data/overrides.json
 data/webcache.json
+data/backups/
+data/ingest-report.json
+data/missed.json
+data/picklists.json
+data/pending.json
+
+# Local secrets (Claude API key)
+data/config.json
 
 .DS_Store

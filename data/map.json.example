@@ -1,0 +1,12 @@
+{
+  "_comment": "Optional warehouse map. Copy to data/map.json and edit to match your floor: one rect per zone, ids matching the zone codes in your bin data. Units are arbitrary — width/height set the canvas. The item detail highlights the zones an item lives in.",
+  "width": 100,
+  "height": 60,
+  "zones": [
+    { "id": "A", "label": "A", "x": 2, "y": 2, "w": 28, "h": 26 },
+    { "id": "B", "label": "B", "x": 34, "y": 2, "w": 28, "h": 26 },
+    { "id": "C", "label": "C", "x": 66, "y": 2, "w": 32, "h": 26 },
+    { "id": "WIRE", "label": "WIRE", "x": 2, "y": 32, "w": 44, "h": 26 },
+    { "id": "YARD", "label": "YARD", "x": 50, "y": 32, "w": 48, "h": 26 }
+  ]
+}

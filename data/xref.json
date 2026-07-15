@@ -1,0 +1,12 @@
+{
+  "_comment": "Cross-references. groups: sets of interchangeable items (ids are MFR|CAT). When one is out of stock, in-stock members show as substitutes. goesWith: accessories that pair with a family of items — 'for' matches like knowledge.json (mfr and/or cat regex). Edit freely; the server hot-reloads.",
+  "groups": [
+    { "id": "example-gfci-15a", "note": "15A self-test GFCI receptacles, white — interchangeable for most jobs",
+      "ids": ["LEV|GFWR1", "HUBW|GFRST15W"] }
+  ],
+  "goesWith": [
+    { "id": "example-emt-half-inch", "note": "sells with 1/2\" EMT set-screw connectors",
+      "for": { "mfr": "BPT", "cat": "^230" },
+      "items": ["BPT|250"] }
+  ]
+}

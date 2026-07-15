@@ -218,15 +218,12 @@ button.btn.primary:hover { background: var(--navy-dark); color: #fff; }
 .saved { color: var(--navy); font-size: 12px; font-weight: 700; }
 
 .imgs {
-  display: grid; grid-template-columns: repeat(9, 1fr); /* 18 images = 9x2 rectangle */
-  gap: 5px; margin-top: 4px;
-}
-@media (max-width: 640px) {
-  .imgs { grid-template-columns: repeat(6, 1fr); } /* 6x3 on phones */
+  display: flex; flex-wrap: nowrap; overflow-x: auto; /* top 10 in one straight line */
+  gap: 5px; margin-top: 4px; padding-bottom: 4px;
 }
 .imgcell {
   display: block; border: 2px solid var(--line); border-radius: 8px; overflow: hidden;
-  aspect-ratio: 1; background: var(--panel2); position: relative; cursor: pointer;
+  aspect-ratio: 1; flex: 0 0 96px; background: var(--panel2); position: relative; cursor: pointer;
 }
 .imgcell:hover { border-color: var(--navy); }
 .imgcell img { width: 100%; height: 100%; object-fit: contain; display: block; background: #fff; }
@@ -312,9 +309,7 @@ header:hover .brandtext { text-shadow: 0 0 14px rgba(255, 255, 255, .45); }
 }
 .kw:hover, .loc:hover, .why:hover { transform: scale(1.16); box-shadow: 0 3px 10px rgba(12, 37, 71, .14); }
 .suggchip:hover, .recentchip:hover { transform: scale(1.08); }
-.mfrlogo { transition: transform .25s cubic-bezier(.2, .7, .3, 1); }
-.card:hover .mfrlogo { transform: scale(1.15); }
-.mfrlogo:hover { transform: scale(1.35) !important; }
+/* logos keep a constant size — no hover growth */
 
 /* the part photo blooms when you hover it in the results list */
 .itemphoto {
@@ -373,3 +368,157 @@ details.learn summary:hover { padding-left: 8px; }
 .rotcard .card { margin-bottom: 0; }
 .rotitem b { font-family: var(--mono); color: var(--navy); font-size: 15px; }
 .rotdesc { color: var(--dim); font-size: 13px; max-width: 340px; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- status: freshness, banners, badges (Phase A/B) ---------- */
+.fresh { color: #9fd49f; }
+.fresh.stale { color: #f5c04e; font-weight: 700; }
+.fresh.verystale { color: #ff7a7a; font-weight: 700; }
+.badge {
+  display: inline-block; min-width: 16px; padding: 0 5px; margin-left: 4px;
+  background: var(--red); color: #fff; border-radius: 9px; font-size: 11px; font-weight: 700;
+  text-align: center; line-height: 16px;
+}
+#banners { position: sticky; top: 0; z-index: 6; }
+.banner {
+  padding: 8px 18px; font-size: 14px; border-bottom: 1px solid var(--line);
+}
+.banner.warn { background: #fff7e0; color: #7a5b00; }
+.banner.err { background: #ffe8e8; color: #8a1111; }
+.banner details summary { cursor: pointer; font-weight: 600; }
+.banner ul { margin: 6px 0 2px; }
+
+/* reels / lots */
+.lotchip { background: var(--navy-soft); border: 1px dashed var(--navy-border); }
+table.lots { border-collapse: collapse; margin: 4px 0 10px; font-size: 14px; }
+table.lots th, table.lots td { border: 1px solid var(--line); padding: 3px 10px; text-align: left; }
+table.lots th { background: var(--panel2); font-size: 12px; color: var(--dim); }
+table.lots td:first-child { font-family: var(--mono); }
+
+/* multi-user conflict note */
+.conflictwarn { color: #b26a00; font-size: 13px; }
+
+/* missed searches tab */
+table.missed { border-collapse: collapse; width: 100%; max-width: 760px; font-size: 14px; }
+table.missed th, table.missed td { border-bottom: 1px solid var(--line); padding: 6px 10px; text-align: left; }
+table.missed th { font-size: 12px; color: var(--dim); }
+table.missed .mq { font-family: var(--mono); color: var(--navy); }
+
+/* ---------- pick list tray (Phase C) ---------- */
+.addlist {
+  all: unset; cursor: pointer; font-size: 13px; line-height: 1; color: var(--dim);
+  padding: 2px 5px; border-radius: 6px;
+  transition: transform .15s ease, color .15s ease, background .15s ease;
+}
+.addlist:hover { color: var(--navy); background: var(--navy-soft); transform: scale(1.15); }
+#tray { position: fixed; right: 16px; bottom: 16px; z-index: 40; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.traypill {
+  all: unset; cursor: pointer; background: var(--navy); color: #fff; font-weight: 600; font-size: 14px;
+  padding: 10px 16px; border-radius: 24px; box-shadow: 0 4px 16px rgba(12,37,71,.35); order: 2;
+}
+.traypill:hover { background: var(--navy-dark); }
+.traypanel {
+  background: #fff; border: 1px solid var(--line); border-radius: 12px; order: 1;
+  box-shadow: 0 10px 32px rgba(12,37,71,.22); padding: 12px; width: min(440px, calc(100vw - 40px));
+  max-height: 60vh; overflow: auto;
+}
+.trayhead { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+.trayhead select { flex: 1; min-width: 0; font: inherit; padding: 4px; }
+.traytable { width: 100%; border-collapse: collapse; }
+.traytable td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.trayqty { width: 56px; font: inherit; padding: 3px; }
+.tcat { font-family: var(--mono); color: var(--navy); font-size: 13px; }
+.tdesc { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--dim); font-size: 12px;
+         max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tbin { font-family: var(--mono); font-size: 12px; color: var(--dim); white-space: nowrap; }
+.trayrm { all: unset; cursor: pointer; color: var(--red-dark); font-size: 16px; padding: 0 6px; }
+.trayactions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.badge[hidden] { display: none; }
+
+/* ---------- cross-references (Phase D) ---------- */
+.altrow {
+  margin-top: 6px; font-size: 13px; color: #8a1111;
+  background: #fff2f2; border: 1px solid #f3c9c9; border-radius: 8px; padding: 4px 10px;
+}
+.altlink { all: unset; cursor: pointer; color: var(--navy); }
+.altlink b { font-family: var(--mono); }
+.altlink:hover b { text-decoration: underline; }
+.xreflist { margin: 4px 0 10px; padding-left: 20px; font-size: 14px; }
+.xreflist li { margin: 2px 0; }
+.outtag { color: var(--red-dark); font-weight: 700; font-size: 12px; }
+
+/* read-only description + top links in the detail pane */
+.descline { font-size: 14px; margin: 2px 0 6px; }
+.toplinks { margin-bottom: 6px; }
+
+/* ---------- Calc tab (Phase E) ---------- */
+.calcgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 12px; }
+.calcbox { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.calcbox h4 { margin: 2px 0 8px; }
+.calcbox .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+.calcbox label { font-size: 13px; color: var(--dim); display: inline-flex; align-items: center; gap: 4px; }
+.calcbox input[type=number] { width: 64px; font: inherit; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; }
+.calcbox select { font: inherit; padding: 4px; border: 1px solid var(--line); border-radius: 6px; }
+.calcout { margin-top: 6px; font-size: 14px; background: var(--panel2); border-radius: 8px; padding: 7px 10px; }
+.calcout .good, .good { color: #157a2e; }
+.calcout .bad, .bad { color: var(--red-dark); }
+.calchead { color: var(--navy); margin: 24px 0 8px; }
+.nemagrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 12px; }
+.nemacell { text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; }
+.nname { font-weight: 700; color: var(--navy); font-size: 14px; margin-top: 4px; }
+.ninfo { color: var(--dim); font-size: 12px; }
+
+/* ---------- camera barcode scan (Phase F) ---------- */
+#camscan {
+  flex: none; font-size: 18px; padding: 0 14px; border-radius: 12px;
+  border: 2px solid var(--line); background: var(--panel2); cursor: pointer;
+}
+#camscan:hover { border-color: var(--navy); }
+.camoverlay {
+  position: fixed; inset: 0; z-index: 100; background: rgba(8, 18, 36, .92);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+}
+.camoverlay video { max-width: 92vw; max-height: 70vh; border-radius: 12px; }
+.camhint { color: #cdd9ea; font-size: 14px; max-width: 480px; text-align: center; }
+
+/* ---------- AI: suggestions + chat (Phase G) ---------- */
+.pendcard { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; max-width: 760px; }
+.pendhead { display: flex; gap: 10px; align-items: baseline; }
+.pendkind { font-family: var(--mono); font-weight: 700; color: var(--navy); background: var(--navy-soft); border-radius: 6px; padding: 1px 8px; font-size: 12px; }
+.pendwhy { font-size: 14px; margin: 6px 0; }
+.pendpayload { background: var(--panel2); border-radius: 8px; padding: 8px 10px; font-size: 12px; overflow-x: auto; margin: 0 0 8px; }
+.p-err { font-size: 12px; }
+
+#chatdock { position: fixed; left: 16px; bottom: 16px; z-index: 40; display: flex; flex-direction: column; gap: 8px; }
+#chatpill {
+  all: unset; cursor: pointer; align-self: flex-start; background: var(--red); color: #fff; font-weight: 700; font-size: 14px;
+  padding: 10px 16px; border-radius: 24px; box-shadow: 0 4px 16px rgba(200,16,46,.35); order: 2;
+}
+#chatpill:hover { background: var(--red-dark); }
+#chatpanel {
+  order: 1; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px;
+  width: min(420px, calc(100vw - 40px)); box-shadow: 0 10px 32px rgba(12,37,71,.22);
+  display: flex; flex-direction: column; gap: 8px;
+}
+#chatlog { max-height: 46vh; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.chatmsg { border-radius: 10px; padding: 7px 11px; font-size: 14px; white-space: pre-wrap; max-width: 92%; }
+.chatmsg.user { background: var(--navy); color: #fff; align-self: flex-end; }
+.chatmsg.assistant { background: var(--panel2); align-self: flex-start; }
+.chatmsg.wait { color: var(--dim); font-style: italic; }
+.chatmsg.err { background: #ffe8e8; color: #8a1111; }
+.chattools { margin-top: 5px; font-size: 11px; color: var(--dim); font-style: italic; }
+#chatform { display: flex; gap: 6px; }
+#chatinput { flex: 1; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+
+/* ---------- zone map + print cheat sheet (Phase H) ---------- */
+.zonemap { width: min(340px, 100%); height: auto; display: block; margin: 4px 0 8px; }
+
+@media print {
+  header nav, .searchwrap, #banners, #tray, #chatdock, .noprint, #cheatfilter { display: none !important; }
+  header { background: #fff; border-bottom: 2px solid #000; }
+  .brandtext, .meta { color: #000; }
+  main { max-width: none; padding: 0; }
+  .tabpane { display: none; }
+  .tabpane.active { display: block; }
+  #cheatlist { column-count: 2; column-gap: 24px; }
+  .cheatrow { break-inside: avoid; box-shadow: none !important; }
+}

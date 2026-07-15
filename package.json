@@ -5,6 +5,7 @@
   "description": "Translate electrician jargon into CED catalog numbers + bin locations",
   "scripts": {
     "start": "node server.js",
+    "test": "node --test",
     "ingest": "python3 ingest.py",
     "enrich": "node enrich.js"
   }
