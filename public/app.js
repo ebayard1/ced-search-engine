@@ -640,7 +640,10 @@ $('#aisuggest').addEventListener('click', async () => {
   const log = $('#chatlog');
   const pill = $('#chatpill');
   const panel = $('#chatpanel');
+  const close = () => { panel.hidden = true; };
   pill.addEventListener('click', () => { panel.hidden = !panel.hidden; if (!panel.hidden) $('#chatinput').focus(); });
+  $('#chatclose').addEventListener('click', close);
+  panel.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
   function push(role, content, cls = '') {
     const div = document.createElement('div');
     div.className = 'chatmsg ' + role + (cls ? ' ' + cls : '');
