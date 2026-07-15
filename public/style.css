@@ -31,17 +31,56 @@ header {
   position: relative; overflow: hidden;
 }
 .cedlogo { height: 76px; width: auto; display: block; }
-/* shimmer: a soft light band sweeping across the wordmark */
+/* metallic base: a still silver-blue gradient blended over the wordmark */
+.logochip::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(115deg,
+    rgba(255,255,255,0) 0%, rgba(190,205,230,.35) 22%, rgba(255,255,255,.65) 38%,
+    rgba(150,170,205,.35) 55%, rgba(255,255,255,.5) 72%, rgba(190,205,230,.25) 100%);
+  mix-blend-mode: soft-light; pointer-events: none; z-index: 1;
+}
+/* shine: a slow light band sweeping across the wordmark */
 .logochip::after {
-  content: ''; position: absolute; top: -30%; bottom: -30%; width: 34%; left: -50%;
-  background: linear-gradient(105deg, transparent 15%, rgba(255,255,255,.92) 50%, transparent 85%);
+  content: ''; position: absolute; top: -30%; bottom: -30%; width: 30%; left: -50%;
+  background: linear-gradient(105deg, transparent 12%, rgba(255,255,255,.95) 50%, transparent 88%);
   transform: skewX(-18deg);
-  animation: logoshimmer 3.2s ease-in-out infinite;
-  pointer-events: none;
+  animation: logoshimmer 9s ease-in-out infinite;
+  pointer-events: none; z-index: 2;
 }
 @keyframes logoshimmer {
   0% { left: -50%; }
-  55%, 100% { left: 120%; }
+  52%, 100% { left: 125%; }
+}
+/* alive + electrified: the navy letters breathe with an electric-blue aura */
+.cedlogo { animation: electricpulse 5s ease-in-out infinite; }
+@keyframes electricpulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(47,111,255,0)); }
+  42% { filter: drop-shadow(0 0 3px rgba(47,111,255,.45)); }
+  50% { filter: drop-shadow(0 0 7px rgba(47,111,255,.75)) drop-shadow(0 0 16px rgba(47,111,255,.3)); }
+  54% { filter: drop-shadow(0 0 2px rgba(47,111,255,.35)); }
+  58% { filter: drop-shadow(0 0 8px rgba(80,140,255,.7)); }
+  66% { filter: drop-shadow(0 0 1px rgba(47,111,255,.2)); }
+}
+/* hyperreal white sparkle that pops right as the shine finishes its sweep */
+.flare {
+  position: absolute; top: 46%; right: 7%; width: 30px; height: 30px; margin: -15px;
+  pointer-events: none; z-index: 3; opacity: 0;
+  background: radial-gradient(circle, #fff 0 14%, rgba(255,255,255,.75) 24%, rgba(210,225,255,.35) 38%, transparent 55%);
+  animation: flarepop 9s ease-out infinite;
+}
+.flare::before, .flare::after {
+  content: ''; position: absolute; left: 50%; top: 50%; background:
+    linear-gradient(to bottom, transparent, rgba(255,255,255,.98) 45% 55%, transparent);
+  filter: blur(.4px);
+}
+.flare::before { width: 2px; height: 34px; transform: translate(-50%,-50%); }
+.flare::after { width: 34px; height: 2px; background:
+    linear-gradient(to right, transparent, rgba(255,255,255,.98) 45% 55%, transparent); transform: translate(-50%,-50%); }
+@keyframes flarepop {
+  0%, 48% { opacity: 0; transform: scale(.15) rotate(0deg); }
+  53% { opacity: 1; transform: scale(1.25) rotate(18deg); }
+  56% { opacity: .85; transform: scale(.9) rotate(28deg); }
+  61%, 100% { opacity: 0; transform: scale(.2) rotate(40deg); }
 }
 .brandtext { font-size: 44px; font-weight: 800; letter-spacing: .01em; color: #fff; line-height: 1; }
 nav { display: flex; gap: 4px; }
@@ -236,4 +275,92 @@ details.learn .kbody { margin-bottom: 12px; }
   #q { font-size: 17px; }
   .searchwrap { flex-wrap: wrap; }
   #mfrsel { max-width: 100%; width: 100%; padding: 8px 12px; }
+}
+
+/* ============ motion pass: nothing sits still ============ */
+
+/* results glide in, one after another */
+.card {
+  animation: cardIn .38s cubic-bezier(.2, .7, .3, 1) both;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(12, 37, 71, .13); }
+@keyframes cardIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* text wakes up under the mouse */
+.cat { transition: color .22s ease, letter-spacing .22s ease; }
+.card:hover .cat { color: var(--red-dark); letter-spacing: .045em; }
+.top .desc { transition: transform .25s ease, color .25s ease; }
+.card:hover .top .desc { transform: translateX(5px); color: var(--navy); }
+.detail h4 { transition: letter-spacing .25s ease; }
+.detail h4:hover { letter-spacing: .16em; }
+.weblist a { transition: padding-left .2s ease, color .2s ease; display: inline-block; }
+.weblist a:hover { padding-left: 5px; color: var(--red-dark); }
+.brandtext { transition: text-shadow .3s ease; }
+header:hover .brandtext { text-shadow: 0 0 14px rgba(255, 255, 255, .45); }
+.jhit { animation: jargonIn .32s cubic-bezier(.2, .7, .3, 1) both; }
+@keyframes jargonIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+.resultcount { animation: fadeIn .4s both; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* chips & icons grow toward the cursor */
+.kw, .loc, .why, .suggchip, .recentchip {
+  transition: transform .16s cubic-bezier(.2, .7, .3, 1), box-shadow .16s ease,
+              border-color .16s ease, background .16s ease, color .16s ease;
+}
+.kw:hover, .loc:hover, .why:hover { transform: scale(1.16); box-shadow: 0 3px 10px rgba(12, 37, 71, .14); }
+.suggchip:hover, .recentchip:hover { transform: scale(1.08); }
+.mfrlogo { transition: transform .25s cubic-bezier(.2, .7, .3, 1); }
+.card:hover .mfrlogo { transform: scale(1.15); }
+.mfrlogo:hover { transform: scale(1.35) !important; }
+
+/* the part photo blooms when you hover it in the results list */
+.itemphoto {
+  transition: transform .28s cubic-bezier(.2, .7, .3, 1), box-shadow .28s ease;
+  transform-origin: top right; z-index: 3;
+}
+.itemphoto:hover {
+  transform: scale(2.4);
+  box-shadow: 0 14px 40px rgba(12, 37, 71, .3);
+  z-index: 40;
+}
+
+/* image grid cells zoom on hover */
+.imgcell { transition: transform .18s cubic-bezier(.2, .7, .3, 1), border-color .18s, box-shadow .18s; }
+.imgcell:hover { transform: scale(1.7); z-index: 30; box-shadow: 0 12px 32px rgba(12, 37, 71, .28); }
+
+/* buttons, tabs, inputs */
+.tab { transition: background .2s ease, color .2s ease, transform .16s ease; }
+.tab:hover { transform: translateY(-2px); }
+button.btn, a.btn { transition: transform .15s ease, border-color .15s, color .15s, background .15s, box-shadow .15s; }
+button.btn:hover, a.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(12, 37, 71, .12); }
+button.btn:active, a.btn:active { transform: translateY(0) scale(.97); }
+#q, #mfrsel { transition: border-color .2s ease, box-shadow .2s ease; }
+#q:focus { box-shadow: 0 0 0 4px rgba(20, 51, 95, .1); }
+#clearsearch { transition: transform .15s ease, border-color .15s, color .15s; }
+#clearsearch:hover { transform: rotate(-4deg) scale(1.05); }
+.showmore { transition: transform .15s ease, border-color .15s, color .15s; }
+.showmore:hover { transform: scale(1.01); }
+details.learn summary { transition: padding-left .2s ease, color .2s; }
+details.learn summary:hover { padding-left: 8px; }
+.cheatrow { transition: transform .16s ease, box-shadow .16s ease, border-color .16s; }
+.cheatrow:hover { transform: translateX(6px); border-color: var(--navy); box-shadow: 0 4px 14px rgba(12, 37, 71, .1); }
+
+/* rotating "top searches" stack on the empty screen:
+   rows shrink and fade as they sink toward the bottom, slowly cycling */
+.rotstack { position: relative; margin-top: 4px; }
+.rotitem {
+  position: absolute; left: 0; display: inline-flex; align-items: center; gap: 8px;
+  background: var(--panel2); border: 1px solid var(--line); color: var(--text);
+  border-radius: 22px; padding: 8px 18px; font-size: 15px; cursor: pointer;
+  transform-origin: left center; white-space: nowrap;
+  transition: transform .95s cubic-bezier(.25, .8, .25, 1), opacity .95s ease;
+  will-change: transform, opacity;
+}
+.rotitem:hover { border-color: var(--navy); color: var(--navy); background: #fff; }
+.rotitem .rmfr { color: var(--red-dark); font-size: 11px; font-weight: 700; }
+
+/* motion is a courtesy, not a requirement */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

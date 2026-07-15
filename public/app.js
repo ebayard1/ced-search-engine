@@ -29,29 +29,54 @@ function getRecent() {
 }
 function pushRecent(q, mfr) {
   if (!q) return;
-  let list = getRecent().filter((r) => !(r.q === q && r.mfr === mfr));
-  list.unshift({ q, mfr, t: Date.now() });
-  localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 20)));
+  const list = getRecent();
+  const hit = list.find((r) => r.q === q && r.mfr === mfr);
+  if (hit) { hit.count = (hit.count || 1) + 1; hit.t = Date.now(); }
+  else list.unshift({ q, mfr, t: Date.now(), count: 1 });
+  list.sort((a, b) => b.t - a.t);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 30)));
 }
 const saveRecent = debounce((q, mfr) => pushRecent(q, mfr), 2500); // after you stop typing
+let rotTimer = null;
 function renderRecent() {
-  const list = getRecent();
+  clearInterval(rotTimer);
+  // most common first — the stack slowly cycles, shrinking + fading toward the bottom
+  const list = getRecent().slice().sort((a, b) => (b.count || 1) - (a.count || 1) || b.t - a.t).slice(0, 7);
   if (!list.length) { $('#results').innerHTML = ''; return; }
+  const ROW = 50;
   $('#results').innerHTML = `<div class="recent">
-    <div class="recenthead">Recent searches
+    <div class="recenthead">Top searches
       <button class="btn tiny" id="clearrecent">clear</button></div>
-    <div class="recentlist">${list.map((r) => `
-      <button class="recentchip" data-q="${esc(r.q)}" data-mfr="${esc(r.mfr || '')}">
-        ${esc(r.q)}${r.mfr ? `<span class="rmfr">${esc(r.mfr)}</span>` : ''}
+    <div class="rotstack" style="height:${list.length * ROW + 14}px">${list.map((r) => `
+      <button class="rotitem" data-q="${esc(r.q)}" data-mfr="${esc(r.mfr || '')}">
+        🔍 ${esc(r.q)}${r.mfr ? `<span class="rmfr">${esc(r.mfr)}</span>` : ''}
       </button>`).join('')}
     </div></div>`;
   $('#clearrecent').addEventListener('click', () => { localStorage.removeItem(RECENT_KEY); renderRecent(); });
-  $$('.recentchip').forEach((b) => b.addEventListener('click', () => {
+  const items = $$('.rotitem');
+  items.forEach((b) => b.addEventListener('click', () => {
     qInput.value = b.dataset.q;
     mfrSel.value = b.dataset.mfr || '';
     doSearch();
     qInput.focus();
   }));
+  let order = items.map((_, i) => i);
+  function place() {
+    order.forEach((elIdx, pos) => {
+      const el = items[elIdx];
+      el.style.transform = `translateY(${pos * ROW}px) scale(${Math.max(.55, 1 - pos * 0.07)})`;
+      el.style.opacity = String(Math.max(.22, 1 - pos * 0.14));
+      el.style.zIndex = String(30 - pos);
+    });
+  }
+  place();
+  if (items.length > 2) {
+    rotTimer = setInterval(() => {
+      if (!document.body.contains(items[0])) { clearInterval(rotTimer); return; }
+      order = [...order.slice(1), order[0]];
+      place();
+    }, 3200);
+  }
 }
 
 // keep the sticky search bar pinned right below the header, whatever its height
@@ -215,9 +240,11 @@ const RENDER_CHUNK = 80;
 function renderResults(results, q, mfr) {
   const el = $('#results');
   if (!results.length) { el.innerHTML = '<p class="note">Nothing matched. Try the trade name (“sealtight”, “minis”, “jbox”) or a catalog # fragment.</p>'; return; }
+  clearInterval(rotTimer);
   const head = `<div class="resultcount">${results.length} related part${results.length === 1 ? '' : 's'}${mfr ? ` · ${esc(mfr)}` : ''}</div>`;
   let shown = Math.min(RENDER_CHUNK, results.length);
   el.innerHTML = head + results.slice(0, shown).map(card).join('');
+  $$('.card', el).forEach((c, i) => { c.style.animationDelay = Math.min(i * 28, 480) + 'ms'; });
 
   function bind(scope) {
     $$('.card', scope).forEach((c) => {

@@ -135,7 +135,10 @@ const server = http.createServer(async (req, res) => {
       const it = engine.byId.get(body.id);
       if (!it) return json(res, 404, { error: 'unknown id' });
       const o = overridesObj[body.id] || {};
-      if ('desc' in body) o.desc = String(body.desc || '').trim() || undefined;
+      if ('desc' in body) {
+        const d = String(body.desc || '').trim();
+        o.desc = d && d !== it.origDesc ? d : undefined; // identical to original = not an edit
+      }
       if ('keywords' in body) o.keywords = [...new Set((body.keywords || []).map((k) => String(k).trim()).filter(Boolean))];
       if ('notes' in body) o.notes = String(body.notes || '').trim() || undefined;
       if ('image' in body) o.image = String(body.image || '').trim() || undefined;
