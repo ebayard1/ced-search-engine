@@ -37,26 +37,42 @@ function pushRecent(q, mfr) {
   localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 30)));
 }
 const saveRecent = debounce((q, mfr) => pushRecent(q, mfr), 2500); // after you stop typing
+
+// ---------- item interaction tracking (feeds the empty-state rotation) ----------
+const ITEMS_KEY = 'ced-item-hits';
+function getItemHits() {
+  try { return JSON.parse(localStorage.getItem(ITEMS_KEY) || '{}'); } catch { return {}; }
+}
+function bumpItem(id, cat, desc, mfr) {
+  if (!id) return;
+  const hits = getItemHits();
+  const h = hits[id] || { cat, desc, mfr, count: 0 };
+  h.count += 1; h.t = Date.now(); h.cat = cat || h.cat; h.desc = desc || h.desc; h.mfr = mfr || h.mfr;
+  hits[id] = h;
+  // keep the 60 most recently touched
+  const keep = Object.entries(hits).sort((a, b) => b[1].t - a[1].t).slice(0, 60);
+  localStorage.setItem(ITEMS_KEY, JSON.stringify(Object.fromEntries(keep)));
+}
 let rotTimer = null;
 function renderRecent() {
   clearInterval(rotTimer);
-  // most common first — the stack slowly cycles, shrinking + fading toward the bottom
-  const list = getRecent().slice().sort((a, b) => (b.count || 1) - (a.count || 1) || b.t - a.t).slice(0, 7);
+  // your most-used PARTS — the stack slowly cycles, shrinking + fading toward the bottom
+  const list = Object.values(getItemHits()).sort((a, b) => b.count - a.count || b.t - a.t).slice(0, 7);
   if (!list.length) { $('#results').innerHTML = ''; return; }
   const ROW = 50;
   $('#results').innerHTML = `<div class="recent">
-    <div class="recenthead">Top searches
+    <div class="recenthead">Your most-used parts
       <button class="btn tiny" id="clearrecent">clear</button></div>
     <div class="rotstack" style="height:${list.length * ROW + 14}px">${list.map((r) => `
-      <button class="rotitem" data-q="${esc(r.q)}" data-mfr="${esc(r.mfr || '')}">
-        🔍 ${esc(r.q)}${r.mfr ? `<span class="rmfr">${esc(r.mfr)}</span>` : ''}
+      <button class="rotitem" data-q="${esc(r.cat)}">
+        <b>${esc(r.cat)}</b><span class="rotdesc">${esc((r.desc || '').slice(0, 44))}</span>${r.mfr ? `<span class="rmfr">${esc(r.mfr)}</span>` : ''}
       </button>`).join('')}
     </div></div>`;
-  $('#clearrecent').addEventListener('click', () => { localStorage.removeItem(RECENT_KEY); renderRecent(); });
+  $('#clearrecent').addEventListener('click', () => { localStorage.removeItem(ITEMS_KEY); renderRecent(); });
   const items = $$('.rotitem');
   items.forEach((b) => b.addEventListener('click', () => {
     qInput.value = b.dataset.q;
-    mfrSel.value = b.dataset.mfr || '';
+    mfrSel.value = '';
     doSearch();
     qInput.focus();
   }));
@@ -265,6 +281,7 @@ function renderResults(results, q, mfr) {
         }
         cp.textContent = '✓';
         cp.classList.add('copied');
+        bumpItem(c.dataset.id, cp.dataset.cat, $('.top .desc', c)?.textContent?.replace('✎', '').trim(), $('.mfr', c)?.textContent?.trim());
         setTimeout(() => { cp.textContent = '⧉'; cp.classList.remove('copied'); }, 1200);
       });
     });
@@ -303,6 +320,7 @@ async function toggleDetail(cardEl, forceOpen = false) {
   try { data = await api('/api/item?id=' + encodeURIComponent(id)); }
   catch (e) { slot.innerHTML = `<div class="detail err">${esc(e.message)}</div>`; return; }
   const it = data.item;
+  bumpItem(it.id, it.cat, it.desc, it.mfr);
   const know = data.knowledge || [];
   const autoKws = (it.autoKeywords || []).map((k) => `<span class="kw auto">${esc(k)}</span>`).join('');
   slot.innerHTML = `<div class="detail">

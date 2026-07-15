@@ -373,3 +373,6 @@ details.learn summary:hover { padding-left: 8px; }
 }
 .copycat:hover { color: var(--navy); background: var(--navy-soft); transform: scale(1.25); }
 .copycat.copied { color: #fff; background: var(--navy); transform: scale(1.15); }
+
+.rotitem b { font-family: var(--mono); color: var(--navy); font-size: 15px; }
+.rotdesc { color: var(--dim); font-size: 13px; max-width: 340px; overflow: hidden; text-overflow: ellipsis; }
