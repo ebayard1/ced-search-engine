@@ -228,6 +228,7 @@ function card(r) {
     ${photo ? `<img class="itemphoto" src="${esc(photo)}" alt="" onerror="this.closest('.card').classList.remove('haspic');this.remove()">` : ''}
     <div class="top">
       <span class="cat">${esc(r.cat)}</span>
+      <button class="copycat" data-cat="${esc(r.cat)}" title="copy catalog #">⧉</button>
       <span class="desc">${esc(r.desc)}${r.edited ? '<span class="editedflag">✎</span>' : ''}</span>
       <span class="mfr" title="${esc(r.mfrName || r.mfr)}">${mfrLogoImg(r.mfr)}${esc(r.mfr)}</span>
     </div>
@@ -253,6 +254,18 @@ function renderResults(results, q, mfr) {
       c.addEventListener('click', (ev) => {
         if (ev.target.closest('.detail') || ev.target.closest('a,button,input,textarea')) return;
         toggleDetail(c);
+      });
+      const cp = $('.copycat', c);
+      if (cp) cp.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(cp.dataset.cat); }
+        catch { // fallback for older setups
+          const ta = document.createElement('textarea');
+          ta.value = cp.dataset.cat; document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); ta.remove();
+        }
+        cp.textContent = '✓';
+        cp.classList.add('copied');
+        setTimeout(() => { cp.textContent = '⧉'; cp.classList.remove('copied'); }, 1200);
       });
     });
   }

@@ -364,3 +364,12 @@ details.learn summary:hover { padding-left: 8px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* copy catalog # */
+.copycat {
+  all: unset; cursor: pointer; font-size: 15px; line-height: 1; color: var(--dim);
+  padding: 2px 5px; border-radius: 6px; margin-left: -6px;
+  transition: transform .15s ease, color .15s ease, background .15s ease;
+}
+.copycat:hover { color: var(--navy); background: var(--navy-soft); transform: scale(1.25); }
+.copycat.copied { color: #fff; background: var(--navy); transform: scale(1.15); }
