@@ -81,10 +81,14 @@ async function renderRecent() {
   }));
   let order = items.map((_, i) => i);
   function place() {
+    const last = items.length - 1;
     order.forEach((elIdx, pos) => {
       const el = items[elIdx];
-      el.style.transform = `translateY(${pos * ROW}px) scale(${Math.max(.7, 1 - pos * 0.05)})`;
-      el.style.opacity = String(Math.max(.18, 1 - pos * 0.17));
+      // full strength all the way down — only the very bottom card tapers off
+      const scale = pos === last ? .94 : 1 - pos * .008;
+      const opacity = pos === last ? .35 : 1;
+      el.style.transform = `translateY(${pos * ROW}px) scale(${scale})`;
+      el.style.opacity = String(opacity);
       el.style.zIndex = String(30 - pos);
     });
   }
