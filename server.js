@@ -103,7 +103,7 @@ try { state = buildState(); } catch (e) {
 }
 
 // hot reload: human-edited files only; app-managed files (overrides, webcache,
-// missed, picklists, pending) must NOT trigger a rebuild
+// missed, pending) must NOT trigger a rebuild
 const WATCHED = new Set(['catalog.json', 'jargon.json', 'synonyms.json', 'knowledge.json',
   'mfr.json', 'counter-rules.json', 'mfrlogos.json', 'xref.json', 'zones.json', 'map.json']);
 
@@ -163,18 +163,9 @@ function noteSearch(ip, q, hadResults, mfrFiltered) {
   missedTimers.set(ip, setTimeout(() => { missedTimers.delete(ip); recordMissed(q); }, 3000));
 }
 
-// ---------- pick lists: shared job tickets, joined against live stock ----------
-const PICKLISTS_PATH = DATA('picklists.json');
-const picklistsObj = loadJSON('picklists.json', { lists: {} });
-function savePicklists() {
-  try { saveJSONAtomic(PICKLISTS_PATH, picklistsObj); }
-  catch (e) { console.error('picklists save failed:', e.message); }
-}
-let listCounter = 0;
-function newListId() { return 'L' + Date.now().toString(36) + (listCounter++).toString(36); }
-
 // natural sort in warehouse walk order: zones.json order first, then bin
 // segments compared numerically where numeric (A-4-2 before A-10-1)
+// (used by xrefFor to show the nearest in-stock bin for substitutes)
 function binKey(bin) {
   return String(bin || '').split(/[-\s]+/).map((seg) => (/^\d+$/.test(seg) ? seg.padStart(6, '0') : seg));
 }
@@ -190,31 +181,6 @@ function walkOrderSort(a, b) {
     if ((sa[i] || '') !== (sb[i] || '')) return (sa[i] || '') < (sb[i] || '') ? -1 : 1;
   }
   return 0;
-}
-
-// join list line items against the live catalog (stock is never denormalized)
-function joinedList(list) {
-  const items = list.items.map((li) => {
-    const it = state.engine.byId.get(li.id);
-    if (!it) return { ...li, missing: true, cat: li.id.split('|')[1] || li.id, mfr: li.id.split('|')[0] || '', desc: '(no longer in catalog)', bins: [], totalQty: 0 };
-    const bins = [...(it.bins || [])].sort(walkOrderSort);
-    const first = bins.find((b) => b.qty > 0) || bins[0] || null;
-    return {
-      ...li, cat: it.cat, mfr: it.mfr, mfrName: it.mfrName, desc: it.desc,
-      upc: it.upc, totalQty: it.totalQty, bins, firstBin: first ? first.bin : null,
-      firstZone: first ? first.zone : null,
-    };
-  });
-  // pull sheet order: walk the warehouse, not the order things were added
-  items.sort((a, b) => walkOrderSort(
-    { zone: a.firstZone, bin: a.firstBin }, { zone: b.firstZone, bin: b.firstBin }));
-  return { ...list, items };
-}
-
-function listSummaries() {
-  return Object.values(picklistsObj.lists)
-    .map((l) => ({ id: l.id, name: l.name, status: l.status, count: l.items.length, updatedAt: l.updatedAt }))
-    .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
 }
 
 // ---------- AI suggestion queue: everything AI-written is approve-gated ----------
@@ -545,65 +511,6 @@ const server = http.createServer(async (req, res) => {
       } catch (e) {
         return json(res, 502, { error: `web lookup failed: ${e.message}`, query: q });
       }
-    }
-
-    if (u.pathname === '/api/lists' && req.method === 'GET') {
-      const id = u.searchParams.get('id');
-      if (id) {
-        const l = picklistsObj.lists[id];
-        if (!l) return json(res, 404, { error: 'unknown list' });
-        return json(res, 200, { list: joinedList(l) });
-      }
-      return json(res, 200, { lists: listSummaries() });
-    }
-
-    if (u.pathname === '/api/lists' && req.method === 'POST') {
-      const body = await readBody(req);
-      const id = newListId();
-      const now = new Date().toISOString();
-      picklistsObj.lists[id] = {
-        id, name: String(body.name || 'Pick list').trim() || 'Pick list',
-        createdAt: now, updatedAt: now, status: 'open', items: [],
-      };
-      savePicklists();
-      return json(res, 200, { list: picklistsObj.lists[id] });
-    }
-
-    if (u.pathname === '/api/lists/item' && req.method === 'POST') {
-      const body = await readBody(req);
-      const l = picklistsObj.lists[body.listId];
-      if (!l) return json(res, 404, { error: 'unknown list' });
-      if (!body.id) return json(res, 400, { error: 'need item id' });
-      const qty = Number(body.qty);
-      const idx = l.items.findIndex((x) => x.id === body.id);
-      if (!Number.isFinite(qty) || qty <= 0) {
-        if (idx >= 0) l.items.splice(idx, 1);
-      } else if (idx >= 0) {
-        l.items[idx].qty = qty;
-        if ('pickedQty' in body) l.items[idx].pickedQty = Number(body.pickedQty) || 0;
-        if ('note' in body) l.items[idx].note = String(body.note || '');
-      } else {
-        l.items.push({ id: body.id, qty, pickedQty: 0, note: String(body.note || '') });
-      }
-      l.updatedAt = new Date().toISOString();
-      savePicklists();
-      return json(res, 200, { list: joinedList(l) });
-    }
-
-    if (u.pathname === '/api/lists/update' && req.method === 'POST') {
-      const body = await readBody(req);
-      const l = picklistsObj.lists[body.listId];
-      if (!l) return json(res, 404, { error: 'unknown list' });
-      if (body.delete) {
-        delete picklistsObj.lists[body.listId];
-        savePicklists();
-        return json(res, 200, { ok: true, lists: listSummaries() });
-      }
-      if ('name' in body) l.name = String(body.name || '').trim() || l.name;
-      if ('status' in body && ['open', 'done'].includes(body.status)) l.status = body.status;
-      l.updatedAt = new Date().toISOString();
-      savePicklists();
-      return json(res, 200, { list: joinedList(l) });
     }
 
     if (u.pathname === '/api/missed' && req.method === 'GET') {

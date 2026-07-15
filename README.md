@@ -14,8 +14,8 @@ node server.js
 
 Keep the terminal open while you work. `Ctrl-C` stops it. The startup banner
 prints LAN URLs — **any counter station or warehouse tablet on your network can
-use the same app**, and everyone's keywords/notes/pick lists are shared. The
-header shows how many counters are online and how old the inventory data is.
+use the same app**, and everyone's keywords/notes are shared. The header shows
+how many counters are online and how old the inventory data is.
 
 ## What it does
 
@@ -29,14 +29,10 @@ header shows how many counters are online and how old the inventory data is.
   with atomic writes and daily backups in `data/backups/` — survives crashes
   and data refreshes. If two stations edit the same item, the later save wins
   and the pane warns.
-- **Pick lists** — ＋📋 on any result adds it to a shared job ticket. The tray
-  (bottom right) edits quantities, prints a **pull sheet in warehouse walk
-  order** (set your zone order in `data/zones.json`), copies all cat #s, and
-  exports CSV. Lists live on the server, so a list built at the counter opens
-  on the warehouse tablet.
 - **Substitutes & goes-with** — teach interchangeable parts in `data/xref.json`.
-  Out-of-stock results show "Out — sub: …" with live stock; the item detail
-  lists substitutes and companion parts.
+  Out-of-stock results show "Out — sub: …" with live stock, nearest bin first
+  in warehouse walk order (set your zone order in `data/zones.json`); the item
+  detail lists substitutes and companion parts.
 - **Web top 3 + images** — per item: the 10 best product images in one row
   (click one to make it the item photo) and 3 web links (DuckDuckGo, cached in
   `data/webcache.json`; cached wording is indexed into search). CED-portal and
@@ -48,8 +44,8 @@ header shows how many counters are online and how old the inventory data is.
   drop (with wire-size upsizing), wire weight⇄feet, and a NEMA plug chart.
   NEC 2023 values, unit-tested against published answers — still verify
   against the code book for permits.
-- **Shelf labels** — 🏷 on any item or pick list prints labels with Code-128
-  barcodes that the scanner reads back into search.
+- **Shelf labels** — 🏷 on any item prints a label with a Code-128 barcode
+  that the scanner reads back into search.
 - **Cheat Sheet tab** — the counter cheat sheet digitized, filterable,
   printable, with numbering explanations (e.g. BPT 23X size digits).
 - **Learn tab** — write-ups on how part families work and fit together. The
@@ -93,7 +89,7 @@ python3 ingest.py ~/Downloads/Bin_and_Lot_Quantity.xlsx ~/Downloads/lpf.xlsx
 ```
 
 No restart needed — the server hot-reloads data files. Your edits/keywords/
-notes, pick lists, and the web cache are kept — only stock data changes.
+notes and the web cache are kept — only stock data changes.
 Ingest also writes `data/ingest-report.json` and warns when a bin row could
 belong to more than one manufacturer. (Requires `pip3 install --user openpyxl`
 once.)
@@ -119,11 +115,11 @@ these on save (a broken file keeps the old data and shows a banner):
 | `knowledge.json` | the Learn write-ups + which items they attach to |
 | `mfr.json` | mfr code → real manufacturer name (a few are guesses — fix them!) |
 | `xref.json` | substitute groups + goes-with accessories |
-| `zones.json` | warehouse walk order for pull sheets: `{"order": ["A","B","WIRE"]}` |
+| `zones.json` | warehouse walk order used to pick the nearest bin for substitutes: `{"order": ["A","B","WIRE"]}` |
 | `map.json` | optional floor map (see `map.json.example`) — highlights an item's zone |
 | `counter-rules.json` | the Rules tab |
 | `overrides.json` | your per-item edits (managed by the app, backed up daily) |
-| `webcache.json`, `missed.json`, `picklists.json`, `pending.json` | managed by the app |
+| `webcache.json`, `missed.json`, `pending.json` | managed by the app |
 | `config.json` | optional Claude API key + model choice (never commit) |
 
 ## Development
@@ -140,5 +136,5 @@ node scripts/make-fixture-catalog.js   # synthetic catalog so the server boots i
 `lib/web.js` (DuckDuckGo scraper + cache) · `lib/store.js` (atomic JSON +
 backups) · `lib/calc.js` (NEC calculators) · `lib/code128.js` (barcode SVG) ·
 `lib/ai.js` (Claude API client) · `lib/pending.js` (suggestion approval queue) ·
-`public/` (UI + pull sheet + labels) · `ingest.py` (xlsx → catalog.json) ·
+`public/` (UI + labels) · `ingest.py` (xlsx → catalog.json) ·
 `ai-enrich.js` / `ai-xref.js` (batch AI suggesters).

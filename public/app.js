@@ -240,7 +240,6 @@ function card(r) {
     <div class="top">
       <span class="cat">${esc(r.cat)}</span>
       <button class="copycat" data-cat="${esc(r.cat)}" title="copy catalog #">⧉</button>
-      <button class="addlist" title="add to pick list">＋📋</button>
       <span class="desc">${esc(r.desc)}${r.edited ? '<span class="editedflag">✎</span>' : ''}</span>
       <span class="mfr" title="${esc(r.mfrName || r.mfr)}">${mfrLogoImg(r.mfr)}${esc(r.mfr)}</span>
     </div>
@@ -267,8 +266,6 @@ function renderResults(results, q, mfr) {
         if (ev.target.closest('.detail') || ev.target.closest('a,button,input,textarea')) return;
         toggleDetail(c);
       });
-      const al = $('.addlist', c);
-      if (al) al.addEventListener('click', () => picklist.add(c.dataset.id, al));
       $$('.altlink', c).forEach((b) => b.addEventListener('click', () => {
         qInput.value = b.dataset.q;
         doSearch();
@@ -547,132 +544,6 @@ function renderLearn() {
 function renderRules() {
   $('#ruleslist').innerHTML = META.counterRules.map((r) => `<li>${esc(r)}</li>`).join('');
 }
-
-// ---------- pick lists: shared job tickets ----------
-const picklist = (() => {
-  const ACTIVE_KEY = 'ced-active-list'; // which list THIS station adds to
-  let current = null; // joined list from the server
-  let open = false;
-
-  const activeId = () => localStorage.getItem(ACTIVE_KEY) || '';
-  const setActive = (id) => { if (id) localStorage.setItem(ACTIVE_KEY, id); else localStorage.removeItem(ACTIVE_KEY); };
-
-  async function ensureList() {
-    if (activeId()) {
-      try { current = (await api('/api/lists?id=' + encodeURIComponent(activeId()))).list; return current; }
-      catch { setActive(''); } // deleted on another station
-    }
-    const name = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' pick list';
-    current = (await api('/api/lists', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) })).list;
-    setActive(current.id);
-    return current;
-  }
-
-  async function add(id, btnEl) {
-    await ensureList();
-    const line = (current.items || []).find((x) => x.id === id);
-    const qty = line ? line.qty + 1 : 1;
-    current = (await api('/api/lists/item', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ listId: current.id, id, qty }),
-    })).list;
-    if (btnEl) {
-      btnEl.textContent = `✓ ×${qty}`;
-      setTimeout(() => { btnEl.textContent = '＋📋'; }, 1400);
-    }
-    renderTray();
-  }
-
-  async function setQty(id, qty) {
-    current = (await api('/api/lists/item', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ listId: current.id, id, qty }),
-    })).list;
-    renderTray();
-  }
-
-  function csv() {
-    const rows = [['qty', 'catalog', 'mfr', 'description', 'bin', 'upc']];
-    for (const it of current.items) rows.push([it.qty, it.cat, it.mfr, it.desc, it.firstBin || '', it.upc || '']);
-    return rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
-  }
-
-  async function renderTray() {
-    const tray = $('#tray');
-    if (!activeId()) { tray.innerHTML = ''; return; }
-    if (!current || current.id !== activeId()) {
-      try { current = (await api('/api/lists?id=' + encodeURIComponent(activeId()))).list; }
-      catch { setActive(''); tray.innerHTML = ''; return; }
-    }
-    const n = current.items.length;
-    const pill = `<button class="traypill" id="traypill">📋 ${esc(current.name)} · ${n} item${n === 1 ? '' : 's'}</button>`;
-    if (!open) { tray.innerHTML = pill; bindPill(); return; }
-    let lists = [];
-    try { lists = (await api('/api/lists')).lists; } catch {}
-    tray.innerHTML = `${pill}
-      <div class="traypanel">
-        <div class="trayhead">
-          <select id="trayswitch">${lists.map((l) => `<option value="${esc(l.id)}"${l.id === current.id ? ' selected' : ''}>${esc(l.name)} (${l.count})</option>`).join('')}</select>
-          <button class="btn tiny" id="traynew">+ new</button>
-          <button class="btn tiny" id="trayrename">rename</button>
-          <button class="btn tiny" id="traydelete">delete</button>
-        </div>
-        ${n ? `<table class="traytable"><tbody>
-          ${current.items.map((it) => `<tr>
-            <td><input class="trayqty" data-id="${esc(it.id)}" type="number" min="0" value="${it.qty}"></td>
-            <td class="tcat" title="${esc(it.desc)}">${esc(it.cat)}<div class="tdesc">${esc(it.desc)}</div></td>
-            <td class="tbin">${esc(it.firstBin || (it.totalQty === 0 ? 'no stock' : '—'))}</td>
-            <td><button class="trayrm" data-id="${esc(it.id)}" title="remove">×</button></td>
-          </tr>`).join('')}
-        </tbody></table>` : '<p class="note">Empty — use ＋📋 on any search result.</p>'}
-        <div class="trayactions">
-          <a class="btn" target="_blank" href="/list.html?id=${encodeURIComponent(current.id)}">🖨 Pull sheet</a>
-          <a class="btn" target="_blank" href="/labels.html?ids=${encodeURIComponent(current.items.map((it) => it.id).join(','))}">🏷 Labels</a>
-          <button class="btn" id="traycopy">⧉ Copy cat #s</button>
-          <button class="btn" id="traycsv">⬇ CSV</button>
-        </div>
-      </div>`;
-    bindPill();
-    $('#trayswitch').addEventListener('change', (e) => { setActive(e.target.value); current = null; renderTray(); });
-    $('#traynew').addEventListener('click', async () => {
-      const name = prompt('List name (job / PO):', 'Pick list');
-      if (name === null) return;
-      const l = (await api('/api/lists', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) })).list;
-      setActive(l.id); current = null; renderTray();
-    });
-    $('#trayrename').addEventListener('click', async () => {
-      const name = prompt('Rename list:', current.name);
-      if (!name) return;
-      current = (await api('/api/lists/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listId: current.id, name }) })).list;
-      renderTray();
-    });
-    $('#traydelete').addEventListener('click', async () => {
-      if (!confirm(`Delete "${current.name}"? This cannot be undone.`)) return;
-      await api('/api/lists/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listId: current.id, delete: true }) });
-      setActive(''); current = null; open = false; renderTray();
-    });
-    $$('.trayqty').forEach((inp) => inp.addEventListener('change', () => setQty(inp.dataset.id, Number(inp.value))));
-    $$('.trayrm').forEach((b) => b.addEventListener('click', () => setQty(b.dataset.id, 0)));
-    $('#traycopy').addEventListener('click', async (e) => {
-      await copyText(current.items.map((it) => `${it.qty} x ${it.cat}`).join('\n'));
-      e.target.textContent = '✓ copied';
-      setTimeout(() => { e.target.textContent = '⧉ Copy cat #s'; }, 1400);
-    });
-    $('#traycsv').addEventListener('click', () => {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([csv()], { type: 'text/csv' }));
-      a.download = `${current.name.replace(/[^\w-]+/g, '-')}.csv`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    });
-  }
-  function bindPill() {
-    const p = $('#traypill');
-    if (p) p.addEventListener('click', () => { open = !open; current = null; renderTray(); });
-  }
-
-  return { add, renderTray };
-})();
 
 // ---------- missed searches tab ----------
 async function renderMissed() {
@@ -1158,7 +1029,6 @@ async function refreshMeta() {
     renderCalcTab();
     renderRecent();
     renderMissed();
-    picklist.renderTray();
     setInterval(() => { refreshMeta().catch(() => {}); }, 60000);
   } catch (e) {
     $('#meta').textContent = 'failed to load: ' + e.message;
