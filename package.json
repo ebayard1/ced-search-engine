@@ -1,0 +1,11 @@
+{
+  "name": "ced-counter-search",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Translate electrician jargon into CED catalog numbers + bin locations",
+  "scripts": {
+    "start": "node server.js",
+    "ingest": "python3 ingest.py",
+    "enrich": "node enrich.js"
+  }
+}

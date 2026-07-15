@@ -1,0 +1,12 @@
+# Generated from CED inventory exports — contains internal stock/bin data, do not publish.
+# Rebuild locally with:  python3 ingest.py <Bin_and_Lot_Quantity.xlsx> <lpf.xlsx>
+data/catalog.json
+
+# Internal store procedures / account numbers — keep local only
+data/counter-rules.json
+
+# Personal state (your edits + web cache) — local only
+data/overrides.json
+data/webcache.json
+
+.DS_Store

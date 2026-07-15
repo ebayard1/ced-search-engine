@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CED Counter Search</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="logochip">
+      <img class="cedlogo" src="/ced-logo.png?v=2" alt="CED">
+    </span>
+    <span class="brandtext">Counter Search</span>
+  </div>
+  <nav>
+    <button class="tab active" data-tab="search">Search</button>
+    <button class="tab" data-tab="cheat">Cheat Sheet</button>
+    <button class="tab" data-tab="learn">Learn</button>
+    <button class="tab" data-tab="rules">Counter Rules</button>
+  </nav>
+  <div class="meta" id="meta"></div>
+</header>
+
+<main id="tab-search" class="tabpane active">
+  <div class="searchwrap">
+    <input id="q" type="search" placeholder='Try: "sealtight 90 3/4", "minis 1 inch", "gfci 20", "jbox 6x6", "QO120"…' autofocus autocomplete="off" spellcheck="false">
+    <input id="mfrsel" list="mfrlist" placeholder="Manufacturer (type name or code)" autocomplete="off" spellcheck="false" title="Filter by manufacturer — type a name or code, or pick from the list">
+    <datalist id="mfrlist"></datalist>
+    <button id="clearsearch" title="Clear both search fields">✕ Clear</button>
+  </div>
+  <div id="mfrsuggest"></div>
+  <div id="jargonhits"></div>
+  <div id="results"></div>
+</main>
+
+<main id="tab-cheat" class="tabpane">
+  <p class="note">Your counter cheat sheet, digitized. These rules also power the search — matching any term boosts its catalog pattern. Filter:</p>
+  <input id="cheatfilter" type="search" placeholder="filter cheat sheet…" autocomplete="off">
+  <div id="cheatlist"></div>
+</main>
+
+<main id="tab-learn" class="tabpane">
+  <p class="note">How the parts work and fit together. These same write-ups appear on matching items under “What is this?”.</p>
+  <div id="learnlist"></div>
+</main>
+
+<main id="tab-rules" class="tabpane">
+  <p class="note">House rules from the counter sheet.</p>
+  <ol id="ruleslist"></ol>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>

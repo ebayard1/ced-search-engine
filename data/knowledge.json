@@ -1,0 +1,113 @@
+{
+  "_comment": "Category knowledge base. 'match' rules attach an entry to catalog items (mfr code and/or desc/cat regex, case-insensitive). Shown on item detail as 'What is this?'. Edit freely.",
+  "entries": [
+    {
+      "id": "emt-fittings",
+      "title": "EMT & EMT fittings",
+      "match": [{ "mfr": "BPT", "cat": "^2[3456]" }, { "mfr": "COND" }, { "mfr": "FIT", "cat": "^ELEMT" }, { "desc": "EMT" }],
+      "body": "EMT (electrical metallic tubing, 'thinwall', or just 'pipe') is the everyday steel conduit for commercial work. It isn't threaded — everything clamps on. A run works like this: EMT sticks join to each other with COUPLINGS, and terminate into a box or enclosure with a CONNECTOR; the connector passes through a knockout and is held by its locknut. Set screw fittings (BPT 23X connectors / 24X couplings) are the cheap indoor standard. Compression fittings (25X / 26X) are raintight — required outdoors, and often spec'd in concrete or where vibration matters. 'Insulated' (I suffix) means a plastic throat that protects wire insulation as conductors are pulled — most spec jobs require insulated throat connectors. Factory ELBOWS (ELEMT) handle 90s in the larger sizes where hand-bending is impractical; below 1\" most electricians bend their own with a hand bender. Sizes run 1/2\" to 4\". Common asks: 'a stick of three-quarter' = one 10-ft length of 3/4\" EMT; 'connectors and collies' = connectors and couplings."
+    },
+    {
+      "id": "rigid-fittings",
+      "title": "Rigid conduit (GRC) & fittings",
+      "match": [{ "mfr": "FIT", "cat": "^(ELGAL|CPLGAL|NIPGAL)" }, { "desc": "RIGID|GRC" }],
+      "body": "Rigid (GRC — galvanized rigid conduit) is the heavy threaded steel conduit for service entrances, outdoor risers, and anywhere needing maximum protection. Unlike EMT, both ends are threaded like plumbing pipe: sticks join with threaded COUPLINGS (CPLGAL), and enter enclosures through a hub or a knockout secured by TWO locknuts (one inside, one out) plus an insulating bushing on the wire side — or a grounding bushing (BPT 38X) when the raceway must be bonded. NIPPLES (NIPGAL) are short pre-threaded lengths ('close' = threads touch, then 1-1/2\", 2\", etc.) used to join enclosures back-to-back. Factory ELBOWS (ELGAL) are standard because field-threading bends is a pain. If a customer says 'a stick of rigid,' it comes with one coupling on the end. IMC is the lighter-wall cousin that uses the same fittings."
+    },
+    {
+      "id": "pvc-fittings",
+      "title": "PVC conduit & fittings",
+      "match": [{ "mfr": "PVC" }, { "mfr": "CANTX", "cat": "^A5" }],
+      "body": "Schedule 40/80 gray PVC conduit is the underground standard — cheap, corrosion-proof, glues together. Fittings are solvent-welded (primer + PVC cement, 'glue'). The pieces: COUPLINGS join sticks; a MALE ADAPTER (TA — terminal adapter) glues on the pipe end and threads INTO a box, hub, or panel; a FEMALE ADAPTER (FA) glues on and accepts a threaded fitting or rigid nipple — this is how a PVC underground run transitions to rigid at a pole or service. BELL ENDS (BE) flare the conduit mouth so wire isn't cut on the edge where it exits into a trench, vault, or pad. REPAIR/SLIP COUPLINGS (CPLR) have no center stop, so you can slide one fully onto a pipe, butt the new piece, and slide it back over the joint — the fix for a broken run you can't spring apart. Expansion couplings handle slab movement. Elbows come in 22/45/90 degrees; underground 90s at the ends of a run are often rigid steel instead of PVC so a wire pull doesn't burn through the bend."
+    },
+    {
+      "id": "liquidtight",
+      "title": "Sealtight / liquidtight flex",
+      "match": [{ "mfr": "BPT", "cat": "^4[37]" }, { "desc": "L/T|LIQUIDTIGHT|SEALTIGHT" }, { "mfr": "FLEX", "desc": "LT|LIQ" }],
+      "body": "'Sealtight' (brand-name slang, also sealtite; properly LFMC — liquidtight flexible metal conduit) is flexible conduit with a gray PVC jacket over a metal core. It's the standard final connection to anything that vibrates or sits outdoors: A/C condensers, pumps, motors, rooftop units. Runs are kept short (typically 6 ft max as a wiring method). Its own connector family seals on the jacket: BPT 43X = straight, 47X = 90 degree. Suffixes: SLTI = steel insulated, LTI2 = die-cast zinc, NMLT = non-metallic (for the plastic-core version, LFNC). A typical A/C hookup sale: a short roll of 1/2\" or 3/4\" sealtight, one straight + one 90 connector, and a whip's worth of THHN — or just sell a pre-made A/C WHIP."
+    },
+    {
+      "id": "flex-mc",
+      "title": "Metal flex (greenfield), MC cable & connectors",
+      "match": [{ "mfr": "BPT", "cat": "^(52|80)\\d" }, { "mfr": "ARL" }, { "mfr": "AFC" }, { "desc": "\\bMC\\b|METAL CLAD|FLEX" }],
+      "body": "Two different things get called 'flex': GREENFIELD (FMC — bare flexible metal conduit, no wires; you pull your own) and MC CABLE (flexible armor with the conductors already inside — the workhorse for commercial branch circuits). Greenfield uses screw-in connectors (BPT 52X straight, 80X for 90s) that thread into the spiral. MC cable uses MC connectors — the counter favorite is Arlington's SNAP-2-IT (40AST family): push it into the knockout, snap, done, no locknut. 404010AST is the duplex version (two cables, one KO). Sizing note: an MC connector is sized to the cable armor OD, not trade size — 40AST covers the common 14/2 through 10/3 range. Anti-shorts ('red heads') protect the wire where the armor is cut on plain MC connectors; snap-ins have them built in or included."
+    },
+    {
+      "id": "boxes-metal",
+      "title": "Metal boxes: 4-squares, mud rings, handy boxes",
+      "match": [{ "mfr": "ORBUM" }, { "mfr": "CANTX", "cat": "^EZ" }],
+      "body": "The 4-SQUARE (4S, or '1900 box') is the universal commercial box: 4\"x4\", standard 1-1/2\" deep (4SB) or 'deep' 2-1/8\" (4SDB) when it's stuffed or feeding through. MKO = mixed knockouts (1/2\" and 3/4\"). A 4-square never takes a device directly — you add a MUD RING (plaster ring): 1-gang or 2-gang, raised 1/4\" to 1-1/4\" to match drywall thickness. Flat blank covers close unused boxes; raised covers give splice room. The HANDY BOX (utility box, HB/DHB) is a single-gang surface-mount box for garages and shops — device screws directly in, no ring. 4-11/16\" boxes are the bigger cousin for feeder splices. Old-work: plastic cut-in boxes (Cantex EZ14SO/EZ18SO) or the metal TIGER GRIP (ORBUM TG1) clamp into existing drywall. New-work plastic nail-ons (EZ18SNW) tack to studs in residential. Ceiling fans need a listed FAN-RATED box (FSB). Extension rings stack on a flush box that ended up too shallow."
+    },
+    {
+      "id": "boxes-weatherproof",
+      "title": "Weatherproof (bell) boxes & covers",
+      "match": [{ "mfr": "ORBUM", "cat": "^[12]D?B" }, { "desc": "WEATHERPROOF|WTHRPRF|\\bWP\\b" }],
+      "body": "BELL BOXES (the cast-aluminum gray boxes with threaded hubs — 'bell box' = old Bell Electric brand) are the outdoor box standard. Orbit numbering tells you the drilling: 1B755 = 1-gang, 3/4\" hubs (7), five of them (5+'5'); 1B503 = 1-gang, 1/2\" hubs, three holes; 2Bxxx = 2-gang; a D means deep (1DB503). Unused hubs get CLOSE-UP PLUGS. Rigid, sealtight, or male adapters thread straight into the hubs — no locknut needed. Pair with a weatherproof cover: for receptacles outdoors the code answer is an IN-USE ('bubble') cover — flat flip covers only qualify where nothing stays plugged in. GFCI protection is required for essentially all outdoor receptacles. A 'WP GFI kit' sale = bell box + in-use cover + GFCI + sealtight or rigid fittings to get there."
+    },
+    {
+      "id": "devices",
+      "title": "Wiring devices: receptacles, switches, GFCI, covers",
+      "match": [{ "mfr": "PS" }, { "mfr": "LEV" }],
+      "body": "Decoding a device ask: AMPERAGE (15A residential/commercial standard; 20A where spec or kitchen/shop circuits — a 20A receptacle has the sideways slot, NEMA 5-20R vs 5-15R). TR (tamper-resistant, shuttered slots) — required by code in dwellings, so TR is the default resi sell. GFCI ('GFI') protects people, required in bathrooms/kitchens/outdoors/garages; one GFCI at the head of a circuit protects everything downstream via its LOAD terminals. DECORA is Leviton's name for the rectangular 'rocker' style — same electrical function, different look; GFCIs are all decora-shaped, which is why decora and GFCI share wallplates (PS TP26W / LEV PJ26W). Standard duplex uses TP8W/PJ8W plates. Switches: single-pole, 3-WAY (two locations — no ON/OFF marking), 4-way (three+ locations, goes between two 3-ways). Grades: resi < spec/commercial (CR20) < hospital (green dot). Cross-brand: PS 3232TR ↔ LEV T5320; PS 1597TR ↔ LEV GFTR1; PS 2097TR ↔ LEV GFTR2."
+    },
+    {
+      "id": "supports",
+      "title": "Straps, hangers, strut & box supports",
+      "match": [{ "mfr": "BPT", "cat": "^(90|92|21)\\d" }, { "mfr": "BLINE" }, { "mfr": "GSTRT" }, { "mfr": "DOT", "desc": "STRAP|HANGER|ROD|CLAMP" }],
+      "body": "Code says conduit gets supported within 3 ft of every box and every 10 ft of run — that's what this aisle is for. ONE-HOLE STRAPS nail the pipe to the surface (BPT 92X for EMT, 90X for rigid — rigid OD is bigger, so straps aren't interchangeable). Two-hole straps for bigger pipe. MINERALACS ('minis', BPT 21X0BN) are hangers that suspend conduit from threaded rod or screw to strut — the standard for overhead racks. STRUT ('unistrut'/'kindorf', 1-5/8\" channel) + spring nuts + strut straps build trapeze racks: two rods, a strut cross-piece, minis or strut clamps holding the pipes. ALL-THREAD ROD (ATR, usually 1/4\" or 3/8\") hangs it from beam clamps or concrete anchors. TELESCOPING BOX BRACKETS (B-Line BB216T/BB224T, Caddy TSGB) span between studs at 16\"/24\" centers to mount boxes between them — 'telescope' or 'sliding' bracket at the counter. Caddy-style clips (batwings, J-hooks, bridle rings) support MC and low-voltage cable off structure."
+    },
+    {
+      "id": "fuses",
+      "title": "Fuses (FLNR / FLSR & friends)",
+      "match": [{ "mfr": "LF" }, { "desc": "FUSE" }],
+      "body": "The counter staples are Class RK5 time-delay cartridge fuses: FLNR = 250V, FLSR = 600V, number = amps (FLNR060 = 60A, 250V). Time-delay ('dual element') rides through motor inrush — that's why they're the default for A/C disconnects and motor circuits. Match the fuse VOLTAGE to the system (240V single-phase → FLNR is fine; 480V three-phase → must be FLSR) and the AMPS to the nameplate or existing fuse. Case sizes step at 30/60/100/200/400/600A — a 35A fuse is physically bigger than a 30A, so it won't fit 30A clips; that's why the disconnect size matters. Littelfuse FLNR ↔ Bussmann FRN-R ↔ Mersen TR-R are direct crosses (FLSR ↔ FRS-R). Customers replacing fuses in an air conditioner disconnect usually want FLNR + the amp rating printed on the old fuse or the condenser nameplate ('max fuse')."
+    },
+    {
+      "id": "lugs",
+      "title": "Lugs, split bolts & taps (Burndy)",
+      "match": [{ "mfr": "BUR" }, { "mfr": "NSI" }, { "desc": "LUG|SPLIT BOLT|TAP" }],
+      "body": "This is the 'terminate and splice big wire' family. LUGS put a bolt-hole on the end of a conductor: 1-hole (YA...N) or 2-hole ('NEMA 2-hole' — the utility/ground-bar standard), sized by wire (2/0 AWG, 250 kcmil = '250 MCM'...) and stud (1/4\", 3/8\", 1/2\"). Compression lugs (YA series) crimp on with a die tool — the number stamped on the lug is the die index. Mechanical (setscrew) lugs need no tool. SPLIT BOLTS ('kearneys', KS series) splice or tap conductors mid-run — KS number sized by the largest wire. Insulated multi-tap connectors (POLARIS-style, NSI) do the same job with a rubber-covered body — no taping. For grounding: acorn clamps for ground rods, and compression C-taps for grid work. Rule at the counter: know the wire size and material — CU lugs for copper; AL-rated (dual-rated AL9CU) for aluminum feeder."
+    },
+    {
+      "id": "grounding",
+      "title": "Grounding & bonding hardware",
+      "match": [{ "mfr": "BPT", "cat": "^38\\d" }, { "mfr": "HARGR" }, { "desc": "GRD|GROUND|BOND" }],
+      "body": "Bonding = electrically tying all the metal together so a fault has a low-impedance path home. GROUNDING BUSHINGS (BPT 38X) thread onto a rigid connector/nipple where it enters an enclosure; the lug on the side takes a bonding jumper to the ground bar — required on service raceways and anywhere concentric knockouts break the bond. Insulating bushings (no lug) just protect the wire. BONDING LOCKNUTS have a bite screw. Ground rods (5/8\" x 8 ft) drive at services and connect with an ACORN CLAMP or a CADWELD (exothermic weld) for irreversible connections. GEC = grounding electrode conductor (bare CU #6/#4) running panel → rod/ufer/water pipe. Green screws & pigtails bond devices to metal boxes. Solar/PV work uses lay-in lugs and WEEB washers."
+    },
+    {
+      "id": "breakers-panels",
+      "title": "Square D breakers, panels & loadcenters",
+      "match": [{ "mfr": "SQD" }],
+      "body": "Square D is CED's flagship gear line (and this location stocks Siemens for Greentech per the counter sheet — AES stocks Eaton). Two resi/commercial families that DON'T interchange: QO (3/4\" per pole, plug-on, the premium line — QO120 = QO, 1-pole, 20A) and HOMELINE (HOM, 1\" wide, value line — HOM120). Reading the number: series + poles + amps (+suffix: CAFI = combination arc-fault, GFI = ground fault, DF = dual function AFCI+GFCI, CP = consumer pack, 'PCAFI' = plug-on-neutral arc fault). Plug-on-neutral (PON) panels take the neutral-less CAFI breakers. Commercial panelboards use bolt-on breakers: QOB = bolt-on QO; NQ/NF panels take QOB/EDB etc. I-Line is the big-feeder panelboard family (FA/KA/LA frames). Always match breaker family to the panel label — a 'Square D breaker' isn't one thing. Safety switches / disconnects: see the VisiPacT entry."
+    },
+    {
+      "id": "safety-switches",
+      "title": "Safety switches / disconnects (Square D numbering)",
+      "match": [{ "mfr": "SQD", "cat": "^(H|D|DU|DTU|VH|VHU)" }, { "desc": "SAFETY SW|DISCONNECT" }],
+      "body": "Square D safety switch catalog numbers decode left to right (VisiPacT poster): TYPE — D = general duty (240V), H = heavy duty (600V), DU/HU = non-fusible (U = unfused), DTU = double throw, VH = VisiPacT heavy duty. POLES/BLADES digit, then SIZE digit: 1 = 30A, 2 = 60A, 3 = 100A, 4 = 200A, 5 = 400A, 6 = 600A. N suffix = neutral installed. Enclosure suffix: none = NEMA 1 (indoor), RB = NEMA 3R rainproof w/ bolt-on hub provision, DS = 4X stainless, R = 3R. So DU222RB = general duty, non-fusible, 2-pole 60A, 240V, outdoor 3R. The classic A/C disconnect ask ('a 60-amp AC pullout') is a small non-fusible 3R puller; a fused disconnect needs FUSES TOO — ask amps (nameplate 'max fuse') and voltage (240 → FLNR, 480 → FLSR). Fusible switches hold Class H/K/R fuses; reject kits force Class R."
+    },
+    {
+      "id": "wire",
+      "title": "Building wire: THHN, XHHW, MC, NM & sizes",
+      "match": [{ "mfr": "WIRE" }, { "mfr": "SOUTH" }, { "desc": "THHN|XHHW|SIMPULL" }],
+      "body": "THHN/THWN-2 is the standard single-conductor building wire pulled through conduit — sold by the foot off reels or in 500 ft spools. Sizes: #14, #12, #10 (branch circuits; solid or stranded), #8 and up (always stranded), then 1/0–4/0 ('one-aught'...'four-aught'), then kcmil ('MCM'): 250, 350, 500... Ampacity quick marks (75°C CU): #12=20A, #10=30A, #8=50A(ish), #6=65A, #4=85A, 1/0=150A, 4/0=230A, 250=255A, 500=380A. Colors code the phases: black/red/blue = 120/208, brown/orange/yellow = 277/480, white/gray = neutral, green = ground. Aluminum (XHHW-2 AL) is common for feeders — cheaper, bigger per amp. SIMpull = Southwire's slick jacket; big sizes go out on returnable reels (see counter rules — reel deposits are tracked!). NM-B ('romex') is the resi cable; MC is the commercial equivalent. Wire cuts are final sales — see counter rules."
+    },
+    {
+      "id": "nema-configs",
+      "title": "NEMA plug & receptacle configurations",
+      "match": [{ "desc": "NEMA|TWIST|TURNLOK|L5|L6|L14" }, { "mfr": "PS", "cat": "^(L|CS)" }, { "mfr": "LEV", "cat": "^(2[34]\\d\\d|CS)" }],
+      "body": "NEMA configs (the Legrand wall chart) name every plug/receptacle: [L]{voltage family}-{amps}{R or P}. No L = straight blade, L = locking ('twist-lock'). R = receptacle, P = plug. Families: 5 = 125V w/ ground (5-15R is THE standard outlet; 5-20R has the T-slot), 6 = 250V (6-20R, 6-30R for welders/EV), 14 = 125/250V 4-wire (14-30 dryer, 14-50 range/RV/EV), 10 = old 3-wire dryer (no ground — replacement sales only), L5-30 = 30A twist 125V (generators), L6-30 = 30A twist 250V, L14-30 = generator inlet standard, L21-30 = 3-phase 120/208 5-wire. California-style 50A locking = CS6364/CS6365 (temp power). At the counter: ask AMPS, VOLTS, WIRES (3 or 4), straight or twist — that maps straight to one config. Match plug to receptacle number exactly; adapters between families don't legally exist."
+    },
+    {
+      "id": "conduit-bodies",
+      "title": "Conduit bodies (LBs) & covers",
+      "match": [{ "mfr": "KIL" }, { "mfr": "APP" }, { "desc": "UNILET|CONDULET|\\bLB\\b|\\bLL\\b|\\bLR\\b" }],
+      "body": "Conduit bodies ('condulets' — Crouse-Hinds' name; Appleton says 'unilet') are the cast fittings that let a conduit run turn a corner or provide a pull point without a box. The letters are the shape as you look at the hub end: LB = back exit (the one everyone wants — turns 90° into a wall), LL = left, LR = right, T = tee, C = straight through, X = four-way. Sized by conduit trade size, threaded hubs, sold WITHOUT cover and gasket at many counters — always ask if they need the cover/gasket ('and a cover?'). Form 7/Form 8 refer to body series and cover style (snap vs screw). Mogul bodies (like the Appleton BC400M 'mogul unilet') have extra pulling room for big wire bends. Wet locations need gasketed covers; classified areas need specific series (Killark's world)."
+    },
+    {
+      "id": "tape-consumables",
+      "title": "Tape, wirenuts, lube & consumables",
+      "match": [{ "mfr": "IDEAL" }, { "mfr": "PHIL", "desc": "TAPE" }, { "desc": "TAPE|WIRENUT|WIRE NUT|LUBE|PULL LINE" }],
+      "body": "The impulse rack, but they ask by nickname: 'Super 33' = 3M Super 33+ premium vinyl electrical tape (Temflex 1700 is the cheap roll); colored tape ('phasing tape') marks phases on big wire — brown/orange/yellow for 480, black/red/blue for 208. WIRENUTS by color: yellow (2-3 #14/#12), red (up to #10s), blue/gray for the small stuff — 'a bag of yellows'. Push-in/lever connectors = WAGO or Ideal In-Sure. 'SOAP' = wire pulling lubricant (Polywater, Ideal Yellow 77) for long conduit pulls. 'MOUSE'/'jetline' = pull string; fish tape pushes through short runs; #12 THHN can push a short EMT run ('rodding it'). Anti-oxidant (Noalox) goes on aluminum terminations. Duct seal ('monkey sh*t') plugs raceway ends. GB/Ideal benders, Klein hand tools, and tek screws round out the everyday adds."
+    }
+  ]
+}
