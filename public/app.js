@@ -61,15 +61,21 @@ function stopDrift() {
 }
 ['wheel', 'touchstart', 'mousedown', 'keydown'].forEach((ev) =>
   window.addEventListener(ev, stopDrift, { passive: true }));
+const DRIFT_SPEED = 36; // px per second — a slow read-along crawl
 function startDrift() {
   stopDrift();
   driftDir = 1;
-  const step = () => {
+  let pos = window.scrollY;
+  let last = performance.now();
+  const step = (now) => {
+    const dt = Math.min(100, now - last) / 1000; // clamp gaps (tab switches etc.)
+    last = now;
     const max = document.documentElement.scrollHeight - window.innerHeight;
     if (max > 4) {
-      window.scrollBy(0, 0.45 * driftDir);
-      if (window.scrollY >= max - 1) driftDir = -1;   // drift back up, ping-pong
-      else if (window.scrollY <= 0) driftDir = 1;
+      pos += DRIFT_SPEED * dt * driftDir;
+      if (pos >= max) { pos = max; driftDir = -1; }   // drift back up, ping-pong
+      else if (pos <= 0) { pos = 0; driftDir = 1; }
+      window.scrollTo(0, pos);
     }
     driftRaf = requestAnimationFrame(step);
   };
