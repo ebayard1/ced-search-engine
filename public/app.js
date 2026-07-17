@@ -649,35 +649,46 @@ $('#aisuggest').addEventListener('click', async () => {
 // it is used verbatim everywhere; otherwise the hand-drawn SVG below renders.
 // The SVG is fully inlined (not <use>) so its arms/body are real, animatable
 // DOM nodes — classes, not ids, since several instances can exist at once.
-const BOLT_SVG = `<svg viewBox="0 0 100 132" aria-hidden="true">
-  <g class="bt-leg-l"><path d="M37 96 L31 112" stroke="#000" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-    <ellipse cx="26" cy="119" rx="13" ry="7.5" fill="#fff" stroke="#000" stroke-width="3.5"/>
-    <path d="M15 122 Q26 127 39 122" stroke="#000" stroke-width="2" fill="none"/></g>
-  <g class="bt-leg-r"><path d="M42 92 L54 112" stroke="#000" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-    <ellipse cx="60" cy="119" rx="13" ry="7.5" fill="#fff" stroke="#000" stroke-width="3.5"/>
-    <path d="M49 122 Q60 127 73 122" stroke="#000" stroke-width="2" fill="none"/></g>
+const BOLT_SVG = `<svg viewBox="0 0 120 130" aria-hidden="true">
+  <g class="bt-leg-l"><path d="M56 92 L48 106" stroke="#000" stroke-width="3.8" stroke-linecap="round" fill="none"/>
+    <ellipse cx="44" cy="111.5" rx="12" ry="6.5" fill="#fff" stroke="#000" stroke-width="3"/>
+    <path d="M33.5 114 Q44 118 55.5 113.5" stroke="#000" stroke-width="1.8" fill="none"/></g>
+  <g class="bt-leg-r"><path d="M66 88 L75 101" stroke="#000" stroke-width="3.8" stroke-linecap="round" fill="none"/>
+    <ellipse cx="79" cy="106.5" rx="12" ry="6.5" fill="#fff" stroke="#000" stroke-width="3"/>
+    <path d="M68.5 109 Q79 113 90.5 108.5" stroke="#000" stroke-width="1.8" fill="none"/></g>
   <g class="bt-arm-l">
-    <path d="M36 50 L17 36" stroke="#000" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-    <circle cx="14" cy="33" r="7" fill="#fff" stroke="#000" stroke-width="3"/>
-    <path d="M11 30 L3 20" stroke="#000" stroke-width="8.5" stroke-linecap="round"/>
-    <path d="M11 30 L4 21" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M47 48 L20 39" stroke="#000" stroke-width="3.8" stroke-linecap="round" fill="none"/>
+    <circle cx="17.5" cy="37.5" r="5.5" fill="#fff" stroke="#000" stroke-width="2.6"/>
+    <path d="M15.5 35 L10 28.5" stroke="#000" stroke-width="7" stroke-linecap="round"/>
+    <path d="M15.5 35 L10.5 29" stroke="#fff" stroke-width="3.8" stroke-linecap="round"/>
   </g>
   <g class="bt-arm-r">
-    <path d="M66 52 L84 50" stroke="#000" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-    <circle cx="95" cy="41" r="3.2" fill="#fff" stroke="#000" stroke-width="2.4"/>
-    <circle cx="98" cy="48" r="3.2" fill="#fff" stroke="#000" stroke-width="2.4"/>
-    <circle cx="96" cy="55" r="3.2" fill="#fff" stroke="#000" stroke-width="2.4"/>
-    <circle cx="90" cy="50" r="8" fill="#fff" stroke="#000" stroke-width="3"/>
+    <path d="M81 53 L94 58" stroke="#000" stroke-width="3.8" stroke-linecap="round" fill="none"/>
+    <path d="M103 54 L108 48.5" stroke="#000" stroke-width="5.6" stroke-linecap="round"/>
+    <path d="M103 54 L107.5 49" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M105.5 57.5 L112 54" stroke="#000" stroke-width="5.6" stroke-linecap="round"/>
+    <path d="M105.5 57.5 L111.5 54.3" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M106 61.5 L112.5 60" stroke="#000" stroke-width="5.6" stroke-linecap="round"/>
+    <path d="M106 61.5 L112 60.2" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M97 53.5 L96 47.5" stroke="#000" stroke-width="5.6" stroke-linecap="round"/>
+    <path d="M97 53.5 L96.2 48" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/>
+    <ellipse cx="100" cy="60" rx="7" ry="6.3" fill="#fff" stroke="#000" stroke-width="2.6" transform="rotate(-20 100 60)"/>
   </g>
-  <polygon class="bt-poly" points="52,3 24,60 42,60 30,104 78,44 56,44"
-    fill="#FFC72C" stroke="#000" stroke-width="4.5" stroke-linejoin="round"/>
-  <ellipse cx="42" cy="30" rx="4" ry="5.6" fill="#000"/>
-  <ellipse cx="53" cy="26" rx="4" ry="5.6" fill="#000"/>
-  <path d="M36 21 Q42 16 48 20" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <path d="M49 16 Q54 12 60 16" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <path d="M34 37 Q47 56 64 34 Q63 49 50 53 Q38 51 34 37 Z" fill="#fff" stroke="#000" stroke-width="2.8" stroke-linejoin="round"/>
-  <path d="M36.5 40 Q49 53 61 37.5" stroke="#000" stroke-width="1.6" fill="none"/>
-  <path d="M43 49 Q50 54 57 47 Q53 51.5 49 51.5 Z" fill="#C8102E"/>
+  <polygon class="bt-poly" points="88,6 47,38 45,66 57,66 43,95 81,47 68,47"
+    fill="#FFC72C" stroke="#000" stroke-width="3.8" stroke-linejoin="round"/>
+  <ellipse cx="57.5" cy="40" rx="3.4" ry="5" fill="#fff" stroke="#000" stroke-width="2.2"/>
+  <ellipse cx="66" cy="37.5" rx="3.4" ry="5" fill="#fff" stroke="#000" stroke-width="2.2"/>
+  <ellipse cx="58.2" cy="41.5" rx="1.6" ry="2.6" fill="#000"/>
+  <ellipse cx="66.6" cy="39" rx="1.6" ry="2.6" fill="#000"/>
+  <path d="M52.5 31 Q56.5 28.5 60.5 30.5" stroke="#000" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M62.5 28.5 Q66.5 26 70.5 28" stroke="#000" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M50.5 45.5 q-2 1.8 -1.2 4" stroke="#000" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M70.5 43 q2 1.8 1.2 4" stroke="#000" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M47.5 49.5 Q58 54.5 70.5 46.5 Q71 57 60.5 61.5 Q50 62 47.5 49.5 Z" fill="#fff" stroke="#000" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M50 54.5 Q59 58.5 68.5 51" stroke="#000" stroke-width="1.4" fill="none"/>
+  <path d="M54 59 Q59.5 62.5 65 56.5 Q62.5 61.5 57.5 61.3 Z" fill="#C8102E"/>
+  <path d="M46.5 48 q-1.6 .4 -2.2 2" stroke="#000" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <path d="M71.5 45.5 q1.6 0 2.2 1.6" stroke="#000" stroke-width="1.6" fill="none" stroke-linecap="round"/>
 </svg>`;
 function boltMarkup() {
   return `<img class="bolt-img" src="/bolt.png" alt="Bolt"
@@ -697,8 +708,14 @@ function boltThinkingHTML() {
   const log = $('#chatlog');
   const pill = $('#chatpill');
   const panel = $('#chatpanel');
-  const close = () => { panel.hidden = true; };
-  pill.addEventListener('click', () => { panel.hidden = !panel.hidden; if (!panel.hidden) $('#chatinput').focus(); });
+  const dock = $('#chatdock');
+  const syncPill = () => dock.classList.toggle('open', !panel.hidden); // button shrinks while the panel is open
+  const close = () => { panel.hidden = true; syncPill(); };
+  pill.addEventListener('click', () => {
+    panel.hidden = !panel.hidden;
+    syncPill();
+    if (!panel.hidden) $('#chatinput').focus();
+  });
   $('#chatclose').addEventListener('click', close);
   panel.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
   function push(role, content, cls = '') {
