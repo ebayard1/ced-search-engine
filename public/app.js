@@ -14,6 +14,7 @@ function esc(s) {
 async function api(path, opts) {
   const res = await fetch(path, opts);
   const body = await res.json();
+  if (res.status === 401) { location.href = '/login'; throw new Error('signed out'); }
   if (!res.ok) throw new Error(body.error || res.statusText);
   return body;
 }

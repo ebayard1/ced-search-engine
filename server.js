@@ -12,6 +12,7 @@ const { webLookup, imageLookup, verifyImages, cached, cachedText, webHealth } = 
 const { saveJSONAtomic, rotateBackup, loadJSONGuarded } = require('./lib/store');
 const ai = require('./lib/ai');
 const { createQueue } = require('./lib/pending');
+const { createAuth, parseCookies } = require('./lib/auth');
 
 const HERE = __dirname;
 const DATA_DIR = path.join(HERE, 'data');
@@ -21,6 +22,94 @@ const PORT = process.env.PORT || 8321;
 
 function loadJSON(f, fallback) {
   try { return JSON.parse(fs.readFileSync(DATA(f), 'utf8')); } catch { return fallback; }
+}
+
+// ---------- shared-password gate (optional) ----------
+// CED_PASSWORD env var, or data/config.json {"password": "..."}. Without one the
+// app stays open exactly as before — set one before exposing it beyond the LAN.
+const auth = createAuth({ password: process.env.CED_PASSWORD || loadJSON('config.json', {}).password || '' });
+
+// Paths reachable without a session: the login flow and the logo it displays.
+const AUTH_OPEN = new Set(['/login', '/logout', '/ced-logo.png']);
+
+function loginPage(res, { error = '', code = 200 } = {}) {
+  res.writeHead(code, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+  res.end(`<!doctype html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CED Counter Search — Sign in</title>
+<style>
+  body { margin:0; font:15px/1.45 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+         background:#14335F; color:#182234; display:grid; place-items:center; min-height:100vh; }
+  .card { background:#fff; border-radius:14px; padding:34px 38px; width:min(360px, 90vw);
+          box-shadow:0 12px 40px rgba(0,0,0,.35); border-top:4px solid #ED1C24; text-align:center; }
+  img { height:52px; margin-bottom:10px; }
+  h1 { font-size:17px; margin:0 0 18px; color:#14335F; }
+  input { width:100%; font-size:16px; padding:10px 12px; border:1px solid #BCCDE4; border-radius:8px; }
+  button { width:100%; margin-top:12px; font-size:15px; font-weight:600; padding:10px;
+           border:0; border-radius:8px; background:#14335F; color:#fff; cursor:pointer; }
+  button:hover { background:#0C2547; }
+  .err { color:#C8102E; font-size:13px; margin:10px 0 0; min-height:1em; }
+</style>
+<div class="card">
+  <img src="/ced-logo.png" alt="CED">
+  <h1>Counter Search</h1>
+  <form method="POST" action="/login">
+    <input type="password" name="password" placeholder="Team password" autofocus autocomplete="current-password">
+    <button>Sign in</button>
+  </form>
+  <p class="err">${error}</p>
+</div>`);
+}
+
+function setSessionCookie(req, res, value, maxAgeSec) {
+  // Secure only when the request arrived over https (e.g. via cloudflared) so
+  // plain-http LAN use keeps working.
+  const secure = (req.headers['x-forwarded-proto'] || '').includes('https') ? '; Secure' : '';
+  res.setHeader('Set-Cookie',
+    `ced_session=${value}; Path=/; Max-Age=${maxAgeSec}; HttpOnly; SameSite=Lax${secure}`);
+}
+
+// Returns true when the request was fully handled (login flow or rejection);
+// false means the caller should serve it normally.
+function handleAuth(req, res, u, ip) {
+  if (!auth.enabled) return false;
+
+  if (u.pathname === '/login') {
+    if (req.method === 'POST') {
+      let body = '';
+      req.on('data', (c) => { body += c; if (body.length > 4096) req.destroy(); });
+      req.on('end', () => {
+        if (!auth.allowAttempt(ip)) return loginPage(res, { error: 'Too many tries — wait 15 minutes.', code: 429 });
+        const attempt = new URLSearchParams(body).get('password') || '';
+        if (!auth.checkPassword(attempt)) return loginPage(res, { error: 'Wrong password.', code: 401 });
+        setSessionCookie(req, res, auth.issue(), Math.floor(auth.ttlMs / 1000));
+        res.writeHead(303, { Location: '/' });
+        res.end();
+      });
+    } else {
+      loginPage(res);
+    }
+    return true;
+  }
+
+  if (u.pathname === '/logout') {
+    setSessionCookie(req, res, '', 0);
+    res.writeHead(303, { Location: '/login' });
+    res.end();
+    return true;
+  }
+
+  if (AUTH_OPEN.has(u.pathname)) return false;
+
+  if (auth.verify(parseCookies(req.headers.cookie).ced_session)) return false;
+
+  if (u.pathname.startsWith('/api/')) {
+    json(res, 401, { error: 'auth-required' });
+  } else {
+    res.writeHead(302, { Location: '/login', 'Cache-Control': 'no-store' });
+    res.end();
+  }
+  return true;
 }
 
 // ---------- overrides: user edits, guarded against corruption ----------
@@ -420,7 +509,14 @@ function readBody(req) {
 
 const server = http.createServer(async (req, res) => {
   const u = new URL(req.url, `http://${req.headers.host}`);
-  const ip = req.socket.remoteAddress || '';
+  // Behind cloudflared/a proxy every socket is localhost — recover the real
+  // client IP from headers, but only for loopback connections so LAN clients
+  // can't spoof their identity (the login rate limit keys on this).
+  const sockIp = req.socket.remoteAddress || '';
+  const viaProxy = sockIp === '127.0.0.1' || sockIp === '::1' || sockIp === '::ffff:127.0.0.1';
+  const fwd = req.headers['cf-connecting-ip'] || String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  const ip = (viaProxy && fwd) || sockIp;
+  if (handleAuth(req, res, u, ip)) return;
   if (u.pathname.startsWith('/api/')) touchClient(ip);
   const engine = state.engine;
   try {
@@ -699,5 +795,10 @@ match must select the items above (test your regexes mentally against them).`;
 server.listen(PORT, () => {
   console.log(`CED counter search: ${state.engine.items.length} items loaded`);
   for (const url of lanURLs()) console.log(`  -> ${url}`);
-  console.log('Anyone on your network can use those addresses — edits are shared.');
+  if (auth.enabled) {
+    console.log('Password required — team members sign in once per station (30 days).');
+  } else {
+    console.log('Anyone on your network can use those addresses — edits are shared.');
+    console.log('Going beyond the LAN? Set a password first: CED_PASSWORD=... node server.js');
+  }
 });

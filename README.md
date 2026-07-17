@@ -17,6 +17,34 @@ prints LAN URLs — **any counter station or warehouse tablet on your network ca
 use the same app**, and everyone's keywords/notes are shared. The header shows
 how many counters are online and how old the inventory data is.
 
+## Share it beyond the store (password + tunnel)
+
+The app has a built-in shared-password gate. Set a password either way:
+
+```bash
+CED_PASSWORD=your-team-password node server.js
+# or in data/config.json:  {"password": "your-team-password"}
+```
+
+With a password set, every page and API requires signing in once per
+station/browser (the session lasts 30 days; `/logout` signs out). Wrong-password
+guessing is rate-limited. No password → the app stays open on the LAN exactly
+as before. Changing the password signs every station out.
+
+To get an `https://` link that works outside the store, run a Cloudflare
+Tunnel on the same Mac (free):
+
+```bash
+brew install cloudflared
+cloudflared tunnel login                      # one-time, opens the browser
+cloudflared tunnel create ced-search
+cloudflared tunnel route dns ced-search search.yourdomain.com
+cloudflared tunnel run --url http://localhost:8321 ced-search
+```
+
+**Never expose the app without the password set** — the catalog is internal
+CED data and the AI endpoints spend your API credits.
+
 ## What it does
 
 - **Search** — type what the customer says ("sealtight 90 3/4", "minis",
