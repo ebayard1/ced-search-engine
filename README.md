@@ -38,8 +38,7 @@ how many counters are online and how old the inventory data is.
   `data/webcache.json`; cached wording is indexed into search). CED-portal and
   Google Images buttons sit at the top of every item.
 - **Barcode scanning** — a USB scanner works anywhere in the app: scans land in
-  the search box and run instantly (UPCs already match). On Chrome at
-  localhost, 📷 scans with the camera.
+  the search box and run instantly (UPCs already match).
 - **Calc tab** — conduit fill, box fill, ampacity (with derating), voltage
   drop (with wire-size upsizing), wire weight⇄feet, and a NEMA plug chart.
   NEC 2023 values, unit-tested against published answers — still verify
