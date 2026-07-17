@@ -79,30 +79,11 @@
   <div id="pendinglist"></div>
 </main>
 
-<!-- Bolt: shared SVG sprite, reused as a static icon and as the "thinking" loader (see #bolt-think in style.css) -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="bolt-sprite" viewBox="0 0 100 132">
-    <g id="bolt-leg-l"><path d="M43 96 L40 118" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><ellipse cx="37" cy="123" rx="11" ry="7" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
-    <g id="bolt-leg-r"><path d="M57 96 L60 118" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><ellipse cx="63" cy="123" rx="11" ry="7" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
-    <g id="bolt-arm-l"><path d="M38 55 L14 40" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="9" cy="37" r="9.5" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
-    <g id="bolt-arm-r"><path d="M62 55 L86 44" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="91" cy="41" r="9.5" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
-    <polygon points="58,2 30,54 46,54 34,96 74,46 52,46" fill="#FFC72C" stroke="#000" stroke-width="4.5" stroke-linejoin="round"/>
-    <g id="bolt-face">
-      <ellipse cx="45" cy="34" rx="4.5" ry="6" fill="#000"/>
-      <ellipse cx="61" cy="30" rx="4.5" ry="6" fill="#000"/>
-      <path d="M39 24 Q45 19 51 23" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <path d="M56 20 Q61 15 67 19" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <path d="M42 42 Q52 52 63 40 Q58 49 50 49 Q45 49 42 42 Z" fill="#fff" stroke="#000" stroke-width="2.5"/>
-      <path d="M49 45 Q52 49 56 45" fill="#D8232A" stroke="none"/>
-    </g>
-  </symbol>
-</svg>
-
 <div id="chatdock" hidden>
-  <button id="chatpill"><svg class="bolt-icon" viewBox="0 0 100 132"><use href="#bolt-sprite"/></svg> Ask Bolt</button>
+  <button id="chatpill"><span class="bolt-slot"></span> Ask Bolt</button>
   <div id="chatpanel" hidden>
     <div id="chathead">
-      <span><svg class="bolt-icon small" viewBox="0 0 100 132"><use href="#bolt-sprite"/></svg> Bolt — counter assistant</span>
+      <span><span class="bolt-slot small"></span> Bolt — counter assistant</span>
       <button id="chatclose" title="close" aria-label="close">✕</button>
     </div>
     <div id="chatlog"></div>

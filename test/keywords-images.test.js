@@ -5,13 +5,14 @@ const { createEngine } = require('../lib/search');
 const { rankImages } = require('../lib/web');
 const fx = require('./fixtures');
 
-test('every item gets auto keywords, even with no rule hit and no web cache', () => {
+test('every catalog number gets at least 5 prebuilt tags', () => {
   const e = createEngine({
     catalog: fx.catalog, jargon: fx.jargon, synonyms: fx.synonyms,
     mfrMap: fx.mfr.map, overrides: { get: () => undefined }, webText: null,
   });
   for (const it of e.items) {
-    assert.ok(it.autoKeywords.length >= 1, `${it.id} has no keywords`);
+    assert.ok(it.autoKeywords.length >= 5,
+      `${it.id} has only ${it.autoKeywords.length} tags: ${JSON.stringify(it.autoKeywords)}`);
   }
 });
 

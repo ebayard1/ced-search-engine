@@ -23,14 +23,15 @@ body {
 header {
   display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
   padding: 8px 18px; border-bottom: 3px solid var(--red);
-  background: var(--navy); z-index: 5; /* scrolls away — only the search bar stays pinned */
+  background: var(--navy);
+  position: sticky; top: 0; z-index: 90; /* frozen — never leaves the screen */
 }
 .brand { display: flex; align-items: center; gap: 10px; }
 .logochip {
   background: #fff; border-radius: 10px; padding: 4px 12px; display: flex; align-items: center;
   position: relative; overflow: hidden;
 }
-.cedlogo { height: 76px; width: auto; display: block; }
+.cedlogo { height: 61px; width: auto; display: block; }
 /* metallic base: a still silver-blue gradient blended over the wordmark */
 .logochip::before {
   content: ''; position: absolute; inset: 0;
@@ -96,7 +97,7 @@ main.active { display: block; }
 .note { color: var(--dim); font-size: 13px; margin: 4px 0 12px; }
 
 .searchwrap {
-  position: sticky; top: 0; z-index: 4; background: var(--bg);
+  position: sticky; top: var(--header-h, 0px); z-index: 4; background: var(--bg);
   padding: 6px 0 8px; display: flex; gap: 8px;
   box-shadow: 0 6px 12px -8px rgba(12, 37, 71, .18);
 }
@@ -376,7 +377,7 @@ details.learn summary:hover { padding-left: 8px; }
   background: var(--red); color: #fff; border-radius: 9px; font-size: 11px; font-weight: 700;
   text-align: center; line-height: 16px;
 }
-#banners { position: sticky; top: 0; z-index: 6; }
+#banners { position: sticky; top: var(--header-h, 0px); z-index: 6; }
 .banner {
   padding: 8px 18px; font-size: 14px; border-bottom: 1px solid var(--line);
 }
@@ -487,16 +488,21 @@ table.missed .mq { font-family: var(--mono); color: var(--navy); }
   .cheatrow { break-inside: avoid; box-shadow: none !important; }
 }
 
-/* ---------- Bolt: mascot icon + loading animation ---------- */
-.bolt-icon { width: 22px; height: 29px; flex: none; vertical-align: -6px; }
-.bolt-icon.small { width: 18px; height: 24px; vertical-align: -5px; margin-right: 4px; }
-#chatpill { display: inline-flex; align-items: center; gap: 8px; }
+/* ---------- Bolt: mascot (3x size) + loading animation ----------
+   Each .bolt-slot holds an <img src="/bolt.png"> (drop the original art there
+   for a pixel-identical mascot) with the hand-drawn SVG as automatic fallback. */
+.bolt-slot { display: inline-flex; flex: none; }
+.bolt-slot img, .bolt-slot svg { width: 66px; height: 87px; display: block; }
+.bolt-slot img { object-fit: contain; }
+.bolt-slot svg { display: none; }
+.bolt-slot.svgfallback svg { display: block; }
+.bolt-slot.small img, .bolt-slot.small svg { width: 22px; height: 29px; margin-right: 6px; }
+#chatpill { display: inline-flex; align-items: center; gap: 10px; border-radius: 999px; }
 #chathead span { display: inline-flex; align-items: center; }
 
-/* the "thinking" bubble renders a full inline copy of the sprite (not <use>) so
-   its parts are real, animatable DOM nodes — <use> clones aren't CSS-addressable */
-.bolt-think { display: flex; align-items: center; gap: 10px; }
-.bolt-think svg { width: 34px; height: 45px; flex: none; }
+/* the "thinking" bubble: Bolt hops in place, arms wave (SVG only), body glows */
+.bolt-think { display: flex; align-items: center; gap: 12px; }
+.bolt-slot.think img, .bolt-slot.think svg { width: 102px; height: 135px; }
 .bolt-think .think-label { color: var(--dim); font-style: italic; font-size: 14px; }
 .bolt-think .think-dots span {
   display: inline-block; width: 5px; height: 5px; margin: 0 1px; border-radius: 50%;
@@ -506,12 +512,13 @@ table.missed .mq { font-family: var(--mono); color: var(--navy); }
 .bolt-think .think-dots span:nth-child(3) { animation-delay: .3s; }
 @keyframes boltDot { 0%, 60%, 100% { opacity: .25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
 
-/* the whole figure hops in place while thinking; arms wave, body glows */
-.bolt-think svg { animation: boltHop .85s ease-in-out infinite; transform-origin: 50% 100%; }
+.bolt-think .bolt-slot img, .bolt-think .bolt-slot svg {
+  animation: boltHop .85s ease-in-out infinite; transform-origin: 50% 100%;
+}
 @keyframes boltHop { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-4px) rotate(-3deg); } }
-.bolt-think .bt-arm-l { animation: boltArmL .85s ease-in-out infinite; transform-origin: 38px 55px; }
-.bolt-think .bt-arm-r { animation: boltArmR .85s ease-in-out infinite; transform-origin: 62px 55px; }
+.bolt-think .bt-arm-l { animation: boltArmL .85s ease-in-out infinite; transform-origin: 36px 50px; }
+.bolt-think .bt-arm-r { animation: boltArmR .85s ease-in-out infinite; transform-origin: 66px 52px; }
 @keyframes boltArmL { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-18deg); } }
-@keyframes boltArmR { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(18deg); } }
+@keyframes boltArmR { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(14deg); } }
 .bolt-think .bt-poly { animation: boltGlow 1.4s ease-in-out infinite; }
 @keyframes boltGlow { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 5px rgba(255,199,44,.85)); } }

@@ -644,22 +644,50 @@ $('#aisuggest').addEventListener('click', async () => {
   } catch (e) { out.textContent = e.message; }
 });
 
-// Bolt, fully inlined (not <use>) so its arms/body are real, independently
-// animatable DOM nodes — classes, not ids, since several "thinking" bubbles
-// could exist in the log at once.
+// ---------- Bolt the mascot ----------
+// One source of truth: if public/bolt.png exists (drop in the original art),
+// it is used verbatim everywhere; otherwise the hand-drawn SVG below renders.
+// The SVG is fully inlined (not <use>) so its arms/body are real, animatable
+// DOM nodes — classes, not ids, since several instances can exist at once.
+const BOLT_SVG = `<svg viewBox="0 0 100 132" aria-hidden="true">
+  <g class="bt-leg-l"><path d="M37 96 L31 112" stroke="#000" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+    <ellipse cx="26" cy="119" rx="13" ry="7.5" fill="#fff" stroke="#000" stroke-width="3.5"/>
+    <path d="M15 122 Q26 127 39 122" stroke="#000" stroke-width="2" fill="none"/></g>
+  <g class="bt-leg-r"><path d="M42 92 L54 112" stroke="#000" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+    <ellipse cx="60" cy="119" rx="13" ry="7.5" fill="#fff" stroke="#000" stroke-width="3.5"/>
+    <path d="M49 122 Q60 127 73 122" stroke="#000" stroke-width="2" fill="none"/></g>
+  <g class="bt-arm-l">
+    <path d="M36 50 L17 36" stroke="#000" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+    <circle cx="14" cy="33" r="7" fill="#fff" stroke="#000" stroke-width="3"/>
+    <path d="M11 30 L3 20" stroke="#000" stroke-width="8.5" stroke-linecap="round"/>
+    <path d="M11 30 L4 21" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+  </g>
+  <g class="bt-arm-r">
+    <path d="M66 52 L84 50" stroke="#000" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+    <circle cx="95" cy="41" r="3.2" fill="#fff" stroke="#000" stroke-width="2.4"/>
+    <circle cx="98" cy="48" r="3.2" fill="#fff" stroke="#000" stroke-width="2.4"/>
+    <circle cx="96" cy="55" r="3.2" fill="#fff" stroke="#000" stroke-width="2.4"/>
+    <circle cx="90" cy="50" r="8" fill="#fff" stroke="#000" stroke-width="3"/>
+  </g>
+  <polygon class="bt-poly" points="52,3 24,60 42,60 30,104 78,44 56,44"
+    fill="#FFC72C" stroke="#000" stroke-width="4.5" stroke-linejoin="round"/>
+  <ellipse cx="42" cy="30" rx="4" ry="5.6" fill="#000"/>
+  <ellipse cx="53" cy="26" rx="4" ry="5.6" fill="#000"/>
+  <path d="M36 21 Q42 16 48 20" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M49 16 Q54 12 60 16" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M34 37 Q47 56 64 34 Q63 49 50 53 Q38 51 34 37 Z" fill="#fff" stroke="#000" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M36.5 40 Q49 53 61 37.5" stroke="#000" stroke-width="1.6" fill="none"/>
+  <path d="M43 49 Q50 54 57 47 Q53 51.5 49 51.5 Z" fill="#C8102E"/>
+</svg>`;
+function boltMarkup() {
+  return `<img class="bolt-img" src="/bolt.png" alt="Bolt"
+    onerror="this.parentElement.classList.add('svgfallback'); this.remove()">${BOLT_SVG}`;
+}
+// static icons: the Ask Bolt pill + panel header
+$$('.bolt-slot').forEach((s) => { s.innerHTML = boltMarkup(); });
+
 function boltThinkingHTML() {
-  return `<svg viewBox="0 0 100 132">
-    <g class="bt-leg-l"><path d="M43 96 L40 118" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><ellipse cx="37" cy="123" rx="11" ry="7" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
-    <g class="bt-leg-r"><path d="M57 96 L60 118" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><ellipse cx="63" cy="123" rx="11" ry="7" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
-    <g class="bt-arm-l"><path d="M38 55 L14 40" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="9" cy="37" r="9.5" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
-    <g class="bt-arm-r"><path d="M62 55 L86 44" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="91" cy="41" r="9.5" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
-    <polygon class="bt-poly" points="58,2 30,54 46,54 34,96 74,46 52,46" fill="#FFC72C" stroke="#000" stroke-width="4.5" stroke-linejoin="round"/>
-    <ellipse cx="45" cy="34" rx="4.5" ry="6" fill="#000"/><ellipse cx="61" cy="30" rx="4.5" ry="6" fill="#000"/>
-    <path d="M39 24 Q45 19 51 23" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M56 20 Q61 15 67 19" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M42 42 Q52 52 63 40 Q58 49 50 49 Q45 49 42 42 Z" fill="#fff" stroke="#000" stroke-width="2.5"/>
-    <path d="M49 45 Q52 49 56 45" fill="#D8232A" stroke="none"/>
-  </svg>
+  return `<span class="bolt-slot think">${boltMarkup()}</span>
   <span class="think-label">Bolt is thinking<span class="think-dots"><span></span><span></span><span></span></span></span>`;
 }
 
