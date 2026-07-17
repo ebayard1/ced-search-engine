@@ -496,7 +496,8 @@ table.missed .mq { font-family: var(--mono); color: var(--navy); }
 .bolt-slot img { object-fit: contain; }
 .bolt-slot svg { display: none; }
 .bolt-slot.svgfallback svg { display: block; }
-.bolt-slot.small img, .bolt-slot.small svg { width: 27px; height: 29px; margin-right: 6px; }
+/* inside the chat panel Bolt shows at 2x the header-icon size */
+.bolt-slot.small img, .bolt-slot.small svg { width: 54px; height: 58px; margin-right: 8px; }
 #chatpill { display: inline-flex; align-items: center; gap: 10px; border-radius: 999px; }
 /* the button steps out of the way while the panel is open */
 #chatdock.open #chatpill { padding: 8px 14px; font-size: 13px; gap: 6px; }
