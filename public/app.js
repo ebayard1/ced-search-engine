@@ -691,7 +691,8 @@ const BOLT_SVG = `<svg viewBox="0 0 120 130" aria-hidden="true">
   <path d="M71.5 45.5 q1.6 0 2.2 1.6" stroke="#000" stroke-width="1.6" fill="none" stroke-linecap="round"/>
 </svg>`;
 function boltMarkup() {
-  return `<img class="bolt-img" src="/bolt.png" alt="Bolt"
+  // ?v= busts the day-long image cache whenever the artwork file changes
+  return `<img class="bolt-img" src="/bolt.png?v=2" alt="Bolt"
     onerror="this.parentElement.classList.add('svgfallback'); this.remove()">${BOLT_SVG}`;
 }
 // static icons: the Ask Bolt pill + panel header
