@@ -1,6 +1,8 @@
 'use strict';
 const { test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert');
+const fs = require('fs');
+const path = require('path');
 const ai = require('../lib/ai');
 
 const realFetch = globalThis.fetch;
@@ -45,7 +47,17 @@ test('msg retries 529 then succeeds', async () => {
 
 test('msg throws ai-disabled without a key', async () => {
   delete process.env.ANTHROPIC_API_KEY;
-  await assert.rejects(() => ai.msg({ messages: [] }), (e) => e.code === 'ai-disabled');
+  // ai.enabled() also reads data/config.json — move a real one (e.g. a
+  // developer's own API key) out of the way for this one assertion
+  const cfgPath = path.join(__dirname, '..', 'data', 'config.json');
+  const tmpPath = cfgPath + '.test-backup';
+  const hadConfig = fs.existsSync(cfgPath);
+  if (hadConfig) fs.renameSync(cfgPath, tmpPath);
+  try {
+    await assert.rejects(() => ai.msg({ messages: [] }), (e) => e.code === 'ai-disabled');
+  } finally {
+    if (hadConfig) fs.renameSync(tmpPath, cfgPath);
+  }
 });
 
 test('toolLoop executes tools, feeds results back, returns final text', async () => {

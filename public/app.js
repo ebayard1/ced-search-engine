@@ -443,33 +443,36 @@ async function toggleDetail(cardEl, forceOpen = false) {
   });
 
   // --- images (auto-load, cached server-side; click one to set it as the item photo) ---
+  // Infinite scroll, not a fixed top-N: cells append as the sentinel scrolls into
+  // view, and each <img> uses loading="lazy" so bytes only fetch once a cell is
+  // actually near the visible area of the horizontally-scrolling strip.
   const imgslot = $('.imgslot', detail);
   function renderImages(entry) {
-    // CED portal product photos always lead (server-verified); web images fill to 18 total
+    // CED portal product photos always lead (server-verified); web images fill the rest
     const ced = (data.item.cedImages || []).map((src) => ({
       thumbnail: src, image: src, title: `${it.cat} — CED portal photo`,
       url: `https://cedphx.portalced.com/product-list?term=${encodeURIComponent(it.cat)}`, ced: true,
     }));
     const candidates = [...ced, ...(entry.images || [])];
-    const shownList = candidates.slice(0, 10);
-    let nextIdx = shownList.length; // backfill pointer into candidates
+    if (!candidates.length) { imgslot.innerHTML = '<span class="note">no images found</span>'; return; }
     const cellHtml = (im) => {
       const src = im.thumbnail || im.image;
       return `
       <div class="imgcell${savedImage === src ? ' picked' : ''}${im.ced ? ' cedimg' : ''}" data-src="${esc(src)}" title="${esc(im.title)}\nClick to set as this item's photo">
-        <img src="${esc(src)}" alt="${esc(im.title)}">
+        <img src="${esc(src)}" alt="${esc(im.title)}" loading="lazy">
         ${im.ced ? '<span class="cedtag">CED</span>' : ''}
         <a class="imgopen" href="${esc(im.url || im.image)}" target="_blank" rel="noopener" title="open source page">↗</a>
         <span class="imgpicked">✓ item photo</span>
       </div>`;
     };
-    const imgs = shownList.map(cellHtml).join('');
-    imgslot.innerHTML = imgs
-      ? `<div class="note" style="margin:0 0 4px">Click an image to make it this item's photo (shows on the search result card — saved automatically). Click again to remove.</div>
-         <div class="imgs">${imgs}</div><div class="row"><button class="btn tiny img-refresh">↻ refresh images</button></div>`
-      : '<span class="note">no images found</span>';
+    imgslot.innerHTML = `<div class="note" style="margin:0 0 4px">Click an image to make it this item's photo (shows on the search result card — saved automatically). Scroll for more. Click again to remove.</div>
+       <div class="imgs"><div class="imgsentinel"></div></div>
+       <div class="row"><button class="btn tiny img-refresh">↻ refresh images</button></div>`;
+    const imgsEl = $('.imgs', imgslot);
+    const sentinel = $('.imgsentinel', imgslot);
     const rb = $('.img-refresh', imgslot);
     if (rb) rb.addEventListener('click', () => fetchImages(true));
+
     function bindCell(cell) {
       cell.addEventListener('click', (ev) => {
         if (ev.target.closest('.imgopen')) return; // ↗ opens the source page instead
@@ -479,20 +482,27 @@ async function toggleDetail(cardEl, forceOpen = false) {
         $$('.imgcell', imgslot).forEach((c) => c.classList.toggle('picked', c.dataset.src === savedImage));
       });
       const img = cell.querySelector('img');
-      img.addEventListener('error', () => {
-        // dead image: swap in the next candidate so the grid stays at 18
-        if (nextIdx < candidates.length) {
-          const wrap = document.createElement('div');
-          wrap.innerHTML = cellHtml(candidates[nextIdx++]);
-          const fresh = wrap.firstElementChild;
-          cell.replaceWith(fresh);
-          bindCell(fresh);
-        } else {
-          cell.remove();
-        }
-      });
+      img.addEventListener('error', () => cell.remove()); // dead image: scrolling further just loads more
     }
-    $$('.imgcell', imgslot).forEach(bindCell);
+
+    const BATCH = 10;
+    let shown = 0;
+    function appendBatch() {
+      const next = candidates.slice(shown, shown + BATCH);
+      if (!next.length) { io.disconnect(); sentinel.remove(); return; }
+      shown += next.length;
+      const wrap = document.createElement('div');
+      wrap.innerHTML = next.map(cellHtml).join('');
+      [...wrap.children].forEach((cell) => { imgsEl.insertBefore(cell, sentinel); bindCell(cell); });
+      if (shown >= candidates.length) { io.disconnect(); sentinel.remove(); }
+    }
+    // rootMargin gives it a head start so the next batch is ready before you
+    // actually reach the end of the strip
+    const io = new IntersectionObserver((ioEntries) => {
+      if (ioEntries.some((e) => e.isIntersecting)) appendBatch();
+    }, { root: imgsEl, rootMargin: '0px 300px 0px 0px' });
+    io.observe(sentinel);
+    appendBatch(); // first batch immediately, no need to wait for the observer
   }
   async function fetchImages(force) {
     imgslot.innerHTML = '<span class="note">loading images…</span>';
@@ -634,6 +644,25 @@ $('#aisuggest').addEventListener('click', async () => {
   } catch (e) { out.textContent = e.message; }
 });
 
+// Bolt, fully inlined (not <use>) so its arms/body are real, independently
+// animatable DOM nodes — classes, not ids, since several "thinking" bubbles
+// could exist in the log at once.
+function boltThinkingHTML() {
+  return `<svg viewBox="0 0 100 132">
+    <g class="bt-leg-l"><path d="M43 96 L40 118" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><ellipse cx="37" cy="123" rx="11" ry="7" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
+    <g class="bt-leg-r"><path d="M57 96 L60 118" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><ellipse cx="63" cy="123" rx="11" ry="7" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
+    <g class="bt-arm-l"><path d="M38 55 L14 40" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="9" cy="37" r="9.5" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
+    <g class="bt-arm-r"><path d="M62 55 L86 44" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="91" cy="41" r="9.5" fill="#fff" stroke="#000" stroke-width="3.5"/></g>
+    <polygon class="bt-poly" points="58,2 30,54 46,54 34,96 74,46 52,46" fill="#FFC72C" stroke="#000" stroke-width="4.5" stroke-linejoin="round"/>
+    <ellipse cx="45" cy="34" rx="4.5" ry="6" fill="#000"/><ellipse cx="61" cy="30" rx="4.5" ry="6" fill="#000"/>
+    <path d="M39 24 Q45 19 51 23" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M56 20 Q61 15 67 19" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M42 42 Q52 52 63 40 Q58 49 50 49 Q45 49 42 42 Z" fill="#fff" stroke="#000" stroke-width="2.5"/>
+    <path d="M49 45 Q52 49 56 45" fill="#D8232A" stroke="none"/>
+  </svg>
+  <span class="think-label">Bolt is thinking<span class="think-dots"><span></span><span></span><span></span></span></span>`;
+}
+
 // chat drawer
 (() => {
   const transcript = []; // [{role, content}]
@@ -660,11 +689,14 @@ $('#aisuggest').addEventListener('click', async () => {
     inp.value = '';
     transcript.push({ role: 'user', content: q });
     push('user', q);
-    const wait = push('assistant', '…thinking', 'wait');
+    const wait = push('assistant', '', 'wait');
+    wait.classList.add('bolt-think');
+    wait.innerHTML = boltThinkingHTML();
+    log.scrollTop = log.scrollHeight;
     try {
       const r = await api('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: transcript }) });
       transcript.push({ role: 'assistant', content: r.text });
-      wait.classList.remove('wait');
+      wait.classList.remove('wait', 'bolt-think');
       wait.textContent = r.text;
       if (r.toolsUsed && r.toolsUsed.length) {
         const t = document.createElement('div');
@@ -672,9 +704,11 @@ $('#aisuggest').addEventListener('click', async () => {
         t.textContent = 'checked: ' + r.toolsUsed.join(', ');
         wait.appendChild(t);
       }
-      if (r.toolsUsed && r.toolsUsed.includes('suggest')) refreshMeta().then(() => renderPending()).catch(() => {});
+      if (r.toolsUsed && (r.toolsUsed.includes('suggest') || r.toolsUsed.includes('add_tags'))) {
+        refreshMeta().then(() => renderPending()).catch(() => {});
+      }
     } catch (err) {
-      wait.classList.remove('wait');
+      wait.classList.remove('wait', 'bolt-think');
       wait.classList.add('err');
       wait.textContent = err.message === 'ai-disabled' ? 'AI is not configured on the server.' : err.message;
       transcript.pop(); // let the user retry the same question
@@ -746,45 +780,6 @@ function renderBanners(meta) {
       qInput.value += e.key;
       e.preventDefault();
       doSearch();
-    }
-  });
-})();
-
-// camera scanning where the browser supports it (Chrome/Edge; needs
-// localhost or https — plain LAN http can't open the camera)
-(() => {
-  if (!('BarcodeDetector' in window) || !navigator.mediaDevices) return;
-  const btn = document.createElement('button');
-  btn.id = 'camscan';
-  btn.title = 'scan a barcode with the camera';
-  btn.textContent = '📷';
-  $('#clearsearch').before(btn);
-  btn.addEventListener('click', async () => {
-    const overlay = document.createElement('div');
-    overlay.className = 'camoverlay';
-    overlay.innerHTML = '<video autoplay playsinline></video><button class="btn camclose">✕ close</button><div class="camhint">point at a UPC…</div>';
-    document.body.appendChild(overlay);
-    const video = $('video', overlay);
-    let stream = null, timer = null;
-    const close = () => { clearInterval(timer); if (stream) stream.getTracks().forEach((t) => t.stop()); overlay.remove(); };
-    $('.camclose', overlay).addEventListener('click', close);
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      video.srcObject = stream;
-      const detector = new BarcodeDetector({ formats: ['upc_a', 'upc_e', 'ean_13', 'ean_8', 'code_128', 'code_39'] });
-      timer = setInterval(async () => {
-        try {
-          const codes = await detector.detect(video);
-          if (codes.length) {
-            qInput.value = codes[0].rawValue;
-            close();
-            doSearch();
-            qInput.focus();
-          }
-        } catch { /* frame not ready */ }
-      }, 250);
-    } catch (e) {
-      $('.camhint', overlay).textContent = 'camera unavailable: ' + e.message + ' (camera needs localhost or https — use a USB scanner on LAN stations)';
     }
   });
 })();

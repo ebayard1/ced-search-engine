@@ -205,7 +205,9 @@ Rules:
 - Ground every claim about a part, quantity, or location in a tool result from this conversation. Never invent catalog numbers, bins, or stock.
 - Answer short: catalog # + bin + one line of why. Counter staff are mid-conversation with a customer.
 - If nothing matches, say so and suggest what to search or which knowledge write-up helps.
-- When you learn a jargon mapping or fact worth keeping, call the suggest tool (it queues for human approval — mention that).`;
+- You can tag items with searchable keywords. When someone asks you to tag/label an item, or you notice trade slang that should find a part, first pin down the exact item id with search_inventory or get_item, then call add_tags. Confirm which item you tagged in your reply.
+- When you learn a jargon mapping or fact worth keeping (not tied to one item), call the suggest tool instead.
+- Anything you tag or suggest queues for human approval in the Suggestions tab — say so, don't imply it's saved immediately.`;
 
 const CHAT_TOOLS = [
   { name: 'search_inventory', description: 'Search the local catalog the way the counter search does: jargon, catalog #, UPC, sizes. Returns top matches with stock and bins.',
@@ -218,9 +220,15 @@ const CHAT_TOOLS = [
     input_schema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
   { name: 'list_cheatsheet', description: 'Jargon cheat-sheet rules (term -> mfr + catalog pattern). Optionally filter by term.',
     input_schema: { type: 'object', properties: { term: { type: 'string' } } } },
-  { name: 'suggest', description: 'Queue a suggestion for human approval: a jargon rule, synonym, item keywords, or item note the team should keep.',
+  { name: 'add_tags', description: 'Tag one item with searchable keywords (trade slang, plain-English names, anything a customer might say). Queues for human approval — tell the user that.',
     input_schema: { type: 'object', properties: {
-      kind: { type: 'string', enum: ['jargon-rule', 'synonym', 'item-keywords', 'item-note'] },
+      id: { type: 'string', description: 'exact item id, MFR|CAT — look it up first if unsure' },
+      tags: { type: 'array', items: { type: 'string' }, description: '1-6 keywords to add' },
+      rationale: { type: 'string', description: 'why these tags help find this item' },
+    }, required: ['id', 'tags', 'rationale'] } },
+  { name: 'suggest', description: 'Queue a suggestion for human approval: a jargon rule, synonym, or item note the team should keep (use add_tags for item keywords instead).',
+    input_schema: { type: 'object', properties: {
+      kind: { type: 'string', enum: ['jargon-rule', 'synonym', 'item-note'] },
       payload: { type: 'object' },
       rationale: { type: 'string' },
     }, required: ['kind', 'payload', 'rationale'] } },
@@ -261,6 +269,14 @@ function chatExecTool(name, input) {
     return state.jargon.rules
       .filter((r) => !q || r.term.toLowerCase().includes(q) || (r.aliases || []).some((a) => a.toLowerCase().includes(q)))
       .slice(0, 12).map(({ term, aliases, mfr, match, hint }) => ({ term, aliases, mfr, match, hint }));
+  }
+  if (name === 'add_tags') {
+    const itemId = String(input.id || '');
+    if (!engine.byId.has(itemId)) return { error: `unknown item id ${itemId} — look it up with search_inventory or get_item first` };
+    const tags = (input.tags || []).map((t) => String(t).trim()).filter(Boolean).slice(0, 6);
+    if (!tags.length) return { error: 'need at least one tag' };
+    const s = pendingQueue.file('chat', 'item-keywords', { id: itemId, keywords: tags }, input.rationale || '');
+    return s ? { queued: s.id, note: 'pending human approval in the Suggestions tab' } : { note: 'these tags are already pending for this item' };
   }
   if (name === 'suggest') {
     const s = pendingQueue.file('chat', input.kind, input.payload, input.rationale);
