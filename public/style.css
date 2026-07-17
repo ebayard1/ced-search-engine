@@ -492,21 +492,21 @@ table.missed .mq { font-family: var(--mono); color: var(--navy); }
    Each .bolt-slot holds an <img src="/bolt.png"> (drop the original art there
    for a pixel-identical mascot) with the hand-drawn SVG as automatic fallback. */
 .bolt-slot { display: inline-flex; flex: none; }
-.bolt-slot img, .bolt-slot svg { width: 80px; height: 87px; display: block; transition: width .2s ease, height .2s ease; }
+.bolt-slot img, .bolt-slot svg { width: 96px; height: 104px; display: block; transition: width .2s ease, height .2s ease; }
 .bolt-slot img { object-fit: contain; }
 .bolt-slot svg { display: none; }
 .bolt-slot.svgfallback svg { display: block; }
 /* inside the chat panel Bolt shows at 2x the header-icon size */
-.bolt-slot.small img, .bolt-slot.small svg { width: 54px; height: 58px; margin-right: 8px; }
+.bolt-slot.small img, .bolt-slot.small svg { width: 65px; height: 70px; margin-right: 8px; }
 #chatpill { display: inline-flex; align-items: center; gap: 10px; border-radius: 999px; }
 /* the button steps out of the way while the panel is open */
 #chatdock.open #chatpill { padding: 8px 14px; font-size: 13px; gap: 6px; }
-#chatdock.open #chatpill .bolt-slot img, #chatdock.open #chatpill .bolt-slot svg { width: 27px; height: 29px; }
+#chatdock.open #chatpill .bolt-slot img, #chatdock.open #chatpill .bolt-slot svg { width: 32px; height: 35px; }
 #chathead span { display: inline-flex; align-items: center; }
 
 /* the "thinking" bubble: Bolt at 2x his button size — hops, waves (SVG), glows */
 .bolt-think { display: flex; align-items: center; gap: 12px; }
-.bolt-slot.think img, .bolt-slot.think svg { width: 160px; height: 174px; }
+.bolt-slot.think img, .bolt-slot.think svg { width: 192px; height: 209px; }
 .bolt-think .think-label { color: var(--dim); font-style: italic; font-size: 14px; }
 .bolt-think .think-dots span {
   display: inline-block; width: 5px; height: 5px; margin: 0 1px; border-radius: 50%;
