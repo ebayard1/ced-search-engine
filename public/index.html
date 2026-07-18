@@ -31,8 +31,10 @@
 <main id="tab-search" class="tabpane active">
   <div class="searchwrap">
     <input id="q" type="search" placeholder='Try: "sealtight 90 3/4", "minis 1 inch", "gfci 20", "jbox 6x6", "QO120"…' autofocus autocomplete="off" spellcheck="false">
-    <input id="mfrsel" list="mfrlist" placeholder="Manufacturer (type name or code)" autocomplete="off" spellcheck="false" title="Filter by manufacturer — type a name or code, or pick from the list">
-    <datalist id="mfrlist"></datalist>
+    <span class="mfrwrap">
+      <input id="mfrsel" placeholder="Manufacturer (type name or code)" autocomplete="off" spellcheck="false" title="Filter by manufacturer — type a name or code, or pick from the list">
+      <div id="mfrdrop" hidden></div>
+    </span>
     <button id="clearsearch" title="Clear both search fields">✕ Clear</button>
   </div>
   <div id="mfrsuggest"></div>

@@ -1,5 +1,5 @@
 {
-  "_comment": "Internal mfr code -> real manufacturer name. Used for display and to build web-search queries. Codes marked ? are best guesses — fix them and restart the server.",
+  "_comment": "Internal mfr code -> real manufacturer name. Used for display and to build web-search queries. Codes marked ? are best guesses \u2014 fix them and restart the server.",
   "map": {
     "BPT": "Bridgeport Fittings",
     "ORBUM": "Orbit Industries",
@@ -51,6 +51,24 @@
     "TOP": "Topaz Electric",
     "BRK": "BRK / First Alert",
     "DYKEM": "Dykem",
-    "SC": "Steel City (?)"
+    "SC": "Steel City (?)",
+    "HALEX": "Halex",
+    "ILSCO": "ILSCO",
+    "BRADY": "Brady",
+    "BROAN": "Broan-NuTone",
+    "DYMO": "DYMO",
+    "DYSON": "Dyson",
+    "KIDDE": "Kidde",
+    "JUNO": "Juno Lighting",
+    "EIKO": "EiKO",
+    "BUSS": "Bussmann",
+    "OZG": "OZ-Gedney",
+    "OKONI": "Okonite",
+    "IOTA": "IOTA Engineering",
+    "WESTI": "Westinghouse",
+    "EDW": "Edwards Signaling",
+    "HUBWD": "Hubbell Wiring Devices",
+    "ONQ": "On-Q",
+    "MILW": "Milwaukee Tool"
   }
 }

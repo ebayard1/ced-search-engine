@@ -254,7 +254,7 @@ function noteSearch(ip, q, hadResults, mfrFiltered) {
 
 // natural sort in warehouse walk order: zones.json order first, then bin
 // segments compared numerically where numeric (A-4-2 before A-10-1)
-// (used by xrefFor to show the nearest in-stock bin for substitutes)
+// (used by xrefFor to show the nearest bin for substitutes)
 function binKey(bin) {
   return String(bin || '').split(/[-\s]+/).map((seg) => (/^\d+$/.test(seg) ? seg.padStart(6, '0') : seg));
 }
@@ -291,7 +291,8 @@ const pendingQueue = createQueue({
 const CHAT_SYSTEM = `You are the counter assistant at CED (Consolidated Electrical Distributors), Phoenix.
 You help counter staff find parts, substitutes, and answers fast.
 Rules:
-- Ground every claim about a part, quantity, or location in a tool result from this conversation. Never invent catalog numbers, bins, or stock.
+- Ground every claim about a part or location in a tool result from this conversation. Never invent catalog numbers or bins.
+- You don't have stock quantities or pricing — never state or estimate either. For price or availability counts, point people to the counter staff or the CED portal.
 - Answer short: catalog # + bin + one line of why. Counter staff are mid-conversation with a customer.
 - If nothing matches, say so and suggest what to search or which knowledge write-up helps.
 - You can tag items with searchable keywords. When someone asks you to tag/label an item, or you notice trade slang that should find a part, first pin down the exact item id with search_inventory or get_item, then call add_tags. Confirm which item you tagged in your reply.
@@ -299,11 +300,11 @@ Rules:
 - Anything you tag or suggest queues for human approval in the Suggestions tab — say so, don't imply it's saved immediately.`;
 
 const CHAT_TOOLS = [
-  { name: 'search_inventory', description: 'Search the local catalog the way the counter search does: jargon, catalog #, UPC, sizes. Returns top matches with stock and bins.',
+  { name: 'search_inventory', description: 'Search the local catalog the way the counter search does: jargon, catalog #, UPC, sizes. Returns top matches with bin locations.',
     input_schema: { type: 'object', properties: { query: { type: 'string' }, mfr: { type: 'string', description: 'optional manufacturer code filter' } }, required: ['query'] } },
-  { name: 'get_item', description: 'Full detail for one item id (MFR|CAT): stock, bins, lots, keywords, notes, knowledge write-ups, cached web results.',
+  { name: 'get_item', description: 'Full detail for one item id (MFR|CAT): bin locations, keywords, notes, knowledge write-ups, cached web results.',
     input_schema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
-  { name: 'find_substitutes', description: 'Cross-referenced substitutes and goes-with accessories for an item id, with live stock.',
+  { name: 'find_substitutes', description: 'Cross-referenced substitutes and goes-with accessories for an item id, with bin locations.',
     input_schema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
   { name: 'lookup_knowledge', description: 'Search the Learn write-ups (how part families work and fit together).',
     input_schema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
@@ -326,8 +327,8 @@ const CHAT_TOOLS = [
 function chatExecTool(name, input) {
   const engine = state.engine;
   const brief = (it) => ({
-    id: it.id, cat: it.cat, mfr: it.mfr, mfrName: it.mfrName, desc: it.desc, totalQty: it.totalQty,
-    bins: (it.bins || []).filter((b) => b.qty > 0).slice(0, 3).map((b) => `${b.bin} (${b.qty})`),
+    id: it.id, cat: it.cat, mfr: it.mfr, mfrName: it.mfrName, desc: it.desc,
+    bins: (it.bins || []).slice(0, 3).map((b) => b.bin),
   });
   if (name === 'search_inventory') {
     const out = engine.search(String(input.query || ''), 10, String(input.mfr || ''));
@@ -338,7 +339,7 @@ function chatExecTool(name, input) {
     if (!it) return { error: 'unknown id' };
     const c = cached(it.id);
     return {
-      ...brief(it), origDesc: it.origDesc, upc: it.upc, lots: it.lots, keywords: it.keywords,
+      ...brief(it), origDesc: it.origDesc, upc: it.upc, keywords: it.keywords,
       notes: it.notes, knowledge: knowledgeFor(it), web: c ? c.results.slice(0, 3) : [],
     };
   }
@@ -412,13 +413,13 @@ function knowledgeFor(item) {
   return hits;
 }
 
-// resolve an item's cross-references against live stock
+// resolve an item's cross-references (locations only — no stock numbers)
 function briefItem(id) {
   const it = state.engine.byId.get(id);
   if (!it) return null;
-  const bins = (it.bins || []).filter((b) => b.qty > 0).sort(walkOrderSort);
+  const bins = (it.bins || []).slice().sort(walkOrderSort);
   return { id: it.id, mfr: it.mfr, mfrName: it.mfrName, cat: it.cat, desc: it.desc,
-           totalQty: it.totalQty, firstBin: bins[0] ? bins[0].bin : null };
+           firstBin: bins[0] ? bins[0].bin : null };
 }
 function xrefFor(item) {
   const seen = new Set([item.id]);
@@ -445,20 +446,6 @@ function xrefFor(item) {
   }
   return { equivalents, accessories };
 }
-// best in-stock substitute for an out-of-stock item (shown on search cards)
-function inStockAlt(item) {
-  if (item.totalQty > 0) return null;
-  let best = null;
-  for (const g of state.xrefById.get(item.id) || []) {
-    for (const id of g.ids || []) {
-      if (id === item.id) continue;
-      const b = briefItem(id);
-      if (b && b.totalQty > 0 && (!best || b.totalQty > best.totalQty)) best = b;
-    }
-  }
-  return best;
-}
-
 function webQueryFor(item) {
   const name = item.mfrName && !item.mfrName.includes('(') ? item.mfrName : item.mfr;
   return `${name} ${item.cat} electrical`.trim();
@@ -530,7 +517,6 @@ const server = http.createServer(async (req, res) => {
         const c = cached(r.id);
         r.web = c ? c.results : null;
         r.knowledge = knowledgeFor(r).map((k) => k.id);
-        r.inStockAlt = inStockAlt(r);
       }
       return json(res, 200, out);
     }
@@ -547,11 +533,11 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         item: {
           id: it.id, mfr: it.mfr, mfrName: it.mfrName, cat: it.cat, desc: it.desc,
-          origDesc: it.origDesc, upc: it.upc, bins: it.bins, lots: it.lots,
+          origDesc: it.origDesc, upc: it.upc, bins: (it.bins || []).map(({ bin, zone }) => ({ bin, zone })),
           keywords: it.keywords, autoKeywords: it.autoKeywords, notes: it.notes,
           image: it.image,
           cedImages: await verifyImages(it.id, [1, 2, 3].map((n) => cedImageFor(it.upc, n)).filter(Boolean)),
-          edited: it.edited, totalQty: it.totalQty,
+          edited: it.edited,
         },
         updatedAt: (overridesObj[it.id] || {}).updatedAt || null,
         web: c || null,
@@ -747,7 +733,6 @@ match must select the items above (test your regexes mentally against them).`;
         .sort((a, b) => b.count - a.count);
       return json(res, 200, {
         items: engine.items.length,
-        stocked: engine.items.filter((i) => i.totalQty > 0).length,
         edited: Object.keys(overridesObj).length,
         mfrs,
         mfrLogos: state.mfrLogos,

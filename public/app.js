@@ -173,7 +173,61 @@ const doSearch = debounce(async () => {
   }
 }, 160);
 qInput.addEventListener('input', () => { openId = null; doSearch(); });
-mfrSel.addEventListener('input', () => { openId = null; doSearch(); });
+mfrSel.addEventListener('input', () => { openId = null; renderMfrDrop(mfrSel.value); doSearch(); });
+
+// ---------- manufacturer dropdown ----------
+// Custom, not a native <datalist>: the native one hides its options once the
+// box holds a full match, so clicking a filled box showed nothing. This one
+// always opens with the full list on click/focus and filters while you type.
+const mfrDrop = $('#mfrdrop');
+let mfrDropIdx = -1;
+function mfrLabel(m) { return m.name === m.code ? m.code : `${m.code} — ${m.name}`; }
+function closeMfrDrop() { mfrDrop.hidden = true; mfrDrop.innerHTML = ''; mfrDropIdx = -1; }
+function renderMfrDrop(filter) {
+  const f = String(filter || '').trim().toLowerCase();
+  const list = (META.mfrs || []).filter((m) => !f ||
+    m.code.toLowerCase().includes(f) || (m.name || '').toLowerCase().includes(f));
+  mfrDropIdx = -1;
+  if (!list.length) { closeMfrDrop(); return; }
+  const cur = resolveMfr(mfrSel.value);
+  mfrDrop.innerHTML = list.map((m) =>
+    `<button class="mfropt${m.code === cur ? ' current' : ''}" data-label="${esc(mfrLabel(m))}">
+      <span>${esc(mfrLabel(m))}</span><span class="mfrn">${m.count}</span></button>`).join('');
+  mfrDrop.hidden = false;
+  const c = $('.mfropt.current', mfrDrop);
+  if (c) c.scrollIntoView({ block: 'nearest' });
+  $$('.mfropt', mfrDrop).forEach((b) => {
+    // mousedown, not click — it fires before the input's blur closes the list
+    b.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      mfrSel.value = b.dataset.label;
+      closeMfrDrop();
+      openId = null;
+      doSearch();
+    });
+  });
+}
+mfrSel.addEventListener('focus', () => renderMfrDrop(''));
+mfrSel.addEventListener('click', () => { if (mfrDrop.hidden) renderMfrDrop(''); });
+mfrSel.addEventListener('blur', closeMfrDrop);
+mfrSel.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeMfrDrop(); return; }
+  const opts = $$('.mfropt', mfrDrop);
+  if (!opts.length) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    mfrDropIdx = (mfrDropIdx + (e.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length;
+    opts.forEach((o, i) => o.classList.toggle('active', i === mfrDropIdx));
+    opts[mfrDropIdx].scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'Enter' && mfrDropIdx >= 0) {
+    e.preventDefault();
+    mfrSel.value = opts[mfrDropIdx].dataset.label;
+    closeMfrDrop();
+    openId = null;
+    doSearch();
+  }
+});
+
 $('#clearsearch').addEventListener('click', () => {
   qInput.value = '';
   mfrSel.value = '';
@@ -212,7 +266,7 @@ window.sizeMfrLogo = function (img) {
 };
 function mfrLogoImg(code) {
   const f = (META.mfrLogos || {})[code];
-  return f ? `<img class="mfrlogo" src="/logos/${esc(f)}?v=3" alt="" onload="sizeMfrLogo(this)" onerror="this.remove()">` : '';
+  return f ? `<img class="mfrlogo" src="/logos/${esc(f)}?v=4" alt="" onload="sizeMfrLogo(this)" onerror="this.remove()">` : '';
 }
 
 function kwChips(r) {
@@ -226,16 +280,13 @@ function card(r) {
     .filter((w) => w !== 'browsing manufacturer')
     .map((w) => `<span class="why${w.startsWith('cheat sheet') ? ' rule' : ''}">${esc(w)}</span>`);
   const locs = locChips(r);
-  const nlots = (r.lots || []).length;
   const row2 = [
     ...locs,
     ...(locs.length ? [] : ['<span class="nobins">no bin on file</span>']),
-    ...(nlots ? [`<span class="loc lotchip">${nlots} reel${nlots === 1 ? '' : 's'}</span>`] : []),
     kwChips(r),
     ...whys,
   ].join('');
   const photo = r.image || r.cedImage; // your pick wins; else the CED portal product photo
-  const alt = r.inStockAlt;
   return `<div class="card${photo ? ' haspic' : ''}" data-id="${esc(r.id)}">
     ${photo ? `<img class="itemphoto" src="${esc(photo)}" alt="" onerror="this.closest('.card').classList.remove('haspic');this.remove()">` : ''}
     <div class="top">
@@ -245,7 +296,6 @@ function card(r) {
       <span class="mfr" title="${esc(r.mfrName || r.mfr)}">${mfrLogoImg(r.mfr)}${esc(r.mfr)}</span>
     </div>
     <div class="row2">${row2}</div>
-    ${alt ? `<div class="altrow">Out — sub: <button class="altlink" data-q="${esc(alt.cat)}"><b>${esc(alt.mfr)} ${esc(alt.cat)}</b></button> ${esc(alt.desc)} (${alt.totalQty}${alt.firstBin ? ` in ${esc(alt.firstBin)}` : ''})</div>` : ''}
     <div class="detailslot"></div>
   </div>`;
 }
@@ -267,11 +317,6 @@ function renderResults(results, q, mfr) {
         if (ev.target.closest('.detail') || ev.target.closest('a,button,input,textarea')) return;
         toggleDetail(c);
       });
-      $$('.altlink', c).forEach((b) => b.addEventListener('click', () => {
-        qInput.value = b.dataset.q;
-        doSearch();
-        qInput.focus();
-      }));
       const cp = $('.copycat', c);
       if (cp) cp.addEventListener('click', async () => {
         await copyText(cp.dataset.cat);
@@ -308,7 +353,7 @@ function renderResults(results, q, mfr) {
 function zoneMapSVG(it) {
   const map = META.map;
   if (!map || !Array.isArray(map.zones) || !map.zones.length) return '';
-  const mine = new Set((it.bins || []).filter((b) => b.qty > 0).map((b) => b.zone));
+  const mine = new Set((it.bins || []).map((b) => b.zone));
   const W = map.width || 100, H = map.height || 60;
   return `<svg class="zonemap" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMin meet">
     ${map.zones.map((z) => `
@@ -322,7 +367,7 @@ function zoneMapSVG(it) {
 // substitutes + accessories in the item detail (from data/xref.json)
 function xrefRow(x) {
   return `<li><button class="altlink xr" data-q="${esc(x.cat)}"><b>${esc(x.mfr)} ${esc(x.cat)}</b></button>
-    ${esc(x.desc)} — ${x.totalQty > 0 ? `<b>${x.totalQty}</b>${x.firstBin ? ` in ${esc(x.firstBin)}` : ''}` : '<span class="outtag">out</span>'}
+    ${esc(x.desc)}${x.firstBin ? ` — <span class="loc">${esc(x.firstBin)}</span>` : ''}
     ${x.note ? `<span class="soft">(${esc(x.note)})</span>` : ''}</li>`;
 }
 function xrefSection(xref) {
@@ -365,10 +410,6 @@ async function toggleDetail(cardEl, forceOpen = false) {
     <div class="kws ed-kws">${it.keywords.map((k) => `<span class="kw">${esc(k)}<button title="remove" data-kw="${esc(k)}">×</button></span>`).join('')}</div>
     <div class="row"><input type="text" class="ed-kw-new" placeholder="add keyword, press Enter (e.g. “sealtite”, “ac whip connector”)"></div>
     ${autoKws ? `<h4>Auto keywords <span class="soft">(from the cheat sheet — already searchable)</span></h4><div class="kws">${autoKws}</div>` : ''}
-    ${(it.lots || []).length ? `<h4>Reels / lots</h4>
-    <table class="lots"><thead><tr><th>lot</th><th>qty</th></tr></thead><tbody>
-      ${it.lots.map((l) => `<tr><td>${esc(l.lot)}</td><td>${esc(l.qty)}</td></tr>`).join('')}
-    </tbody></table>` : ''}
     <h4>Notes</h4>
     <textarea class="ed-notes" rows="2" placeholder="counter notes: substitutions, who buys it, gotchas…">${esc(it.notes)}</textarea>
     <div class="row">
@@ -766,7 +807,7 @@ function boltThinkingHTML() {
 
 // ---------- header meta + status banners ----------
 function renderMeta(meta) {
-  const bits = [`${meta.items.toLocaleString()} items`, `${meta.stocked.toLocaleString()} stocked`, `${meta.edited} edited`];
+  const bits = [`${meta.items.toLocaleString()} items`, `${meta.edited} edited`];
   if (meta.clients > 1) bits.push(`${meta.clients} counters online`);
   let freshness = '';
   if (meta.catalogAgeDays != null) {
@@ -1062,12 +1103,6 @@ async function refreshMeta() {
 (async function boot() {
   try {
     await refreshMeta();
-    const dl = $('#mfrlist');
-    for (const m of META.mfrs || []) {
-      const o = document.createElement('option');
-      o.value = m.name === m.code ? m.code : `${m.code} — ${m.name}`;
-      dl.appendChild(o);
-    }
     renderCheat();
     renderLearn();
     renderRules();

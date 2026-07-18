@@ -44,7 +44,7 @@ function esc(s) {
   grid.innerHTML = items.map((it) => {
     let bar = '';
     try { bar = code128.code128Svg(it.cat, { height: 40 }).svg; } catch {}
-    const bin = (it.bins || []).find((b) => b.qty > 0);
+    const bin = (it.bins || [])[0];
     return `<div class="label">
       <div class="mfr">${esc(it.mfrName || it.mfr)}</div>
       <div class="cat">${esc(it.cat)}</div>
