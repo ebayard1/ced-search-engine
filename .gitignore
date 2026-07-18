@@ -17,3 +17,8 @@ data/pending.json
 data/config.json
 
 .DS_Store
+
+# Local runtime logs and Claude Code session files
+server.log
+tunnel.log
+.claude/
