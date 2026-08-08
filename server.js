@@ -341,6 +341,10 @@ function chatExecTool(name, input) {
     return {
       ...brief(it), origDesc: it.origDesc, upc: it.upc, keywords: it.keywords,
       notes: it.notes, knowledge: knowledgeFor(it), web: c ? c.results.slice(0, 3) : [],
+      // catalog # decoded per the manufacturer's numbering system, when known
+      catalogNumber: it.decoded
+        ? { title: it.decoded.title, parts: it.decoded.tags.map((t) => `${t.label}: ${t.code || '(none)'} = ${t.value}`) }
+        : null,
     };
   }
   if (name === 'find_substitutes') {
@@ -535,7 +539,7 @@ const server = http.createServer(async (req, res) => {
           id: it.id, mfr: it.mfr, mfrName: it.mfrName, cat: it.cat, desc: it.desc,
           origDesc: it.origDesc, upc: it.upc, bins: (it.bins || []).map(({ bin, zone }) => ({ bin, zone })),
           keywords: it.keywords, autoKeywords: it.autoKeywords, notes: it.notes,
-          image: it.image,
+          image: it.image, decoded: it.decoded || null,
           cedImages: await verifyImages(it.id, [1, 2, 3].map((n) => cedImageFor(it.upc, n)).filter(Boolean)),
           edited: it.edited,
         },

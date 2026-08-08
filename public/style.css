@@ -202,6 +202,19 @@ main.active { display: block; }
 .kw button { all: unset; cursor: pointer; margin-left: 4px; color: var(--dim); }
 .kw button:hover { color: var(--red); }
 
+/* catalog-number decode: one-line spec on the card, full table in the detail */
+.dectag {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .01em;
+  color: #0b5b3f; background: #E7F5EE; border: 1px solid #A8D9C2; border-radius: 20px; padding: 1px 8px;
+}
+table.decoded { border-collapse: collapse; margin: 4px 0 6px; font-size: 13px; width: 100%; }
+table.decoded td { border-bottom: 1px solid var(--line); padding: 3px 8px 3px 0; vertical-align: top; }
+table.decoded tr:last-child td { border-bottom: 0; }
+table.decoded .dcode {
+  font-family: var(--mono); font-weight: 700; color: var(--red-dark); white-space: nowrap; width: 1%;
+}
+table.decoded .dlabel { color: var(--navy); font-weight: 600; white-space: nowrap; width: 1%; }
+
 .locs { margin-top: 5px; display: flex; gap: 6px; flex-wrap: wrap; }
 .loc {
   font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--navy); background: var(--navy-soft);

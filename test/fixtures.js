@@ -31,6 +31,11 @@ const catalog = {
       bins: [{ zone: 'B', bin: 'B-03-2', qty: 6 }], lots: [] },
     { id: 'LF|FLNR060', mfr: 'LF', cat: 'FLNR060', desc: 'FUSE CLASS RK5 60A TIME DELAY', upc: '',
       bins: [{ zone: 'C', bin: 'C-08-4', qty: 12 }], lots: [] },
+    // Square D safety switches — the catalog-number tagging family (lib/cattags.js)
+    { id: 'SQD|VH322NRB', mfr: 'SQD', cat: 'VH322NRB', desc: 'SAFETY SW HD FUSIBLE', upc: '',
+      bins: [{ zone: 'D', bin: 'D-02-1', qty: 3 }], lots: [] },
+    { id: 'SQD|DU222RB', mfr: 'SQD', cat: 'DU222RB', desc: 'SAFETY SW GD NON FUS', upc: '',
+      bins: [{ zone: 'D', bin: 'D-02-2', qty: 7 }], lots: [] },
   ],
 };
 

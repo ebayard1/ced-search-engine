@@ -275,6 +275,12 @@ function kwChips(r) {
   return user.concat(auto).join('');
 }
 
+// one-line spec read off the catalog number ("60A · 3P · 240V · fusible · Type 3R")
+function decChip(r) {
+  const d = r.decoded;
+  return d && d.summary ? `<span class="dectag" title="${esc(d.title)}">${esc(d.summary)}</span>` : '';
+}
+
 function card(r) {
   const whys = (r.why || [])
     .filter((w) => w !== 'browsing manufacturer')
@@ -283,6 +289,7 @@ function card(r) {
   const row2 = [
     ...locs,
     ...(locs.length ? [] : ['<span class="nobins">no bin on file</span>']),
+    decChip(r),
     kwChips(r),
     ...whys,
   ].join('');
@@ -376,6 +383,20 @@ function xrefSection(xref) {
     ${xref.accessories.length ? `<h4>Goes with</h4><ul class="xreflist">${xref.accessories.map(xrefRow).join('')}</ul>` : ''}`;
 }
 
+// catalog number decoded digit-by-digit (lib/cattags.js) — teaches the
+// numbering system instead of just naming the family
+function decodedSection(d) {
+  if (!d || !d.tags || !d.tags.length) return '';
+  const rows = d.tags.map((t) => `<tr>
+    <td class="dcode">${t.code ? esc(t.code) : '—'}</td>
+    <td class="dlabel">${esc(t.label)}</td>
+    <td>${esc(t.value)}</td></tr>`).join('');
+  return `<h4>Catalog number decoded <span class="soft">(${esc(d.title)})</span></h4>
+    <table class="decoded">${rows}</table>
+    ${d.unknown ? `<div class="soft">Suffix “${esc(d.unknown)}” isn’t on the numbering sheet — check the catalog listing.</div>` : ''}
+    ${d.ref ? `<div class="soft">${esc(d.ref)}</div>` : ''}`;
+}
+
 // ---------- item detail (edit / web / images / learn) ----------
 async function toggleDetail(cardEl, forceOpen = false) {
   const slot = $('.detailslot', cardEl);
@@ -406,6 +427,7 @@ async function toggleDetail(cardEl, forceOpen = false) {
     ${zoneMapSVG(it)}
     <h4>Description</h4>
     <div class="descline">${esc(it.desc)}</div>
+    ${decodedSection(it.decoded)}
     <h4>Keywords <span class="soft">(searchable — teach it your jargon)</span></h4>
     <div class="kws ed-kws">${it.keywords.map((k) => `<span class="kw">${esc(k)}<button title="remove" data-kw="${esc(k)}">×</button></span>`).join('')}</div>
     <div class="row"><input type="text" class="ed-kw-new" placeholder="add keyword, press Enter (e.g. “sealtite”, “ac whip connector”)"></div>

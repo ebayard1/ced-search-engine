@@ -61,6 +61,13 @@ CED data and the AI endpoints spend your API credits.
   Out-of-stock results show "Out — sub: …" with live stock, nearest bin first
   in warehouse walk order (set your zone order in `data/zones.json`); the item
   detail lists substitutes and companion parts.
+- **Catalog-number tags** — for product lines with a published numbering
+  system, every digit of the catalog number is decoded into tags. Square D
+  safety switches ship first: `VH322NRB` reads as heavy-duty fusible · 3-pole ·
+  240V · 60A · factory neutral · Type 3R with hub. The spec line shows on the
+  result card, the full digit-by-digit table on the item, and every tag is
+  searchable — "60 amp 3 pole fusible disconnect" finds the switch even though
+  none of those words are in its description. Add a family in `lib/cattags.js`.
 - **Web top 3 + images** — per item: the 10 best product images in one row
   (click one to make it the item photo) and 3 web links (DuckDuckGo, cached in
   `data/webcache.json`; cached wording is indexed into search). CED-portal and
@@ -162,6 +169,7 @@ node scripts/make-fixture-catalog.js   # synthetic catalog so the server boots i
 `server.js` (zero-dep HTTP server + API) · `lib/search.js` (scoring engine) ·
 `lib/web.js` (DuckDuckGo scraper + cache) · `lib/store.js` (atomic JSON +
 backups) · `lib/calc.js` (NEC calculators) · `lib/code128.js` (barcode SVG) ·
-`lib/ai.js` (Claude API client) · `lib/pending.js` (suggestion approval queue) ·
+`lib/cattags.js` (catalog-number decoders) · `lib/ai.js` (Claude API client) ·
+`lib/pending.js` (suggestion approval queue) ·
 `public/` (UI + labels) · `ingest.py` (xlsx → catalog.json) ·
 `ai-enrich.js` / `ai-xref.js` (batch AI suggesters).
