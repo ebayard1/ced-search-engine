@@ -807,7 +807,8 @@ function boltThinkingHTML() {
       const r = await api('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: transcript }) });
       transcript.push({ role: 'assistant', content: r.text });
       wait.classList.remove('wait', 'bolt-think');
-      wait.textContent = r.text;
+      wait.classList.add('md');
+      wait.innerHTML = md.toHtml(r.text); // /md.js — escapes everything, then adds tags
       if (r.toolsUsed && r.toolsUsed.length) {
         const t = document.createElement('div');
         t.className = 'chattools';

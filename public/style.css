@@ -490,6 +490,39 @@ table.missed .mq { font-family: var(--mono); color: var(--navy); }
 .chatmsg.wait { color: var(--dim); font-style: italic; }
 .chatmsg.err { background: #ffe8e8; color: #8a1111; }
 .chattools { margin-top: 5px; font-size: 11px; color: var(--dim); font-style: italic; }
+
+/* Bolt's replies are markdown rendered to HTML — the blocks bring their own
+   spacing, so drop the pre-wrap the plain-text bubbles rely on. */
+.chatmsg.md { white-space: normal; line-height: 1.45; }
+.chatmsg.md > :first-child { margin-top: 0; }
+.chatmsg.md > :last-child { margin-bottom: 0; }
+.chatmsg.md p { margin: 6px 0; }
+.chatmsg.md h3, .chatmsg.md h4, .chatmsg.md h5, .chatmsg.md h6 {
+  margin: 10px 0 4px; font-size: 13px; font-weight: 700; color: var(--navy);
+  text-transform: uppercase; letter-spacing: .03em;
+}
+.chatmsg.md ul, .chatmsg.md ol { margin: 6px 0; padding-left: 20px; }
+.chatmsg.md li { margin: 2px 0; }
+.chatmsg.md li > ul, .chatmsg.md li > ol { margin: 2px 0; }
+.chatmsg.md strong { color: var(--navy); }
+.chatmsg.md a { color: var(--navy); }
+.chatmsg.md code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px;
+  background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px;
+}
+.chatmsg.md pre {
+  margin: 6px 0; padding: 8px 10px; overflow-x: auto;
+  background: #fff; border: 1px solid var(--line); border-radius: 8px;
+}
+.chatmsg.md pre code { border: 0; padding: 0; background: none; }
+.chatmsg.md blockquote {
+  margin: 6px 0; padding: 2px 0 2px 10px;
+  border-left: 3px solid var(--navy-border); color: var(--dim);
+}
+.chatmsg.md hr { border: 0; border-top: 1px solid var(--line); margin: 8px 0; }
+.chatmsg.md table { border-collapse: collapse; margin: 6px 0; font-size: 13px; display: block; overflow-x: auto; }
+.chatmsg.md th, .chatmsg.md td { border: 1px solid var(--line); padding: 3px 7px; text-align: left; }
+.chatmsg.md th { background: var(--navy-soft); color: var(--navy); }
 #chatform { display: flex; gap: 6px; }
 #chatinput { flex: 1; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
 

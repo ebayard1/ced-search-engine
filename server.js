@@ -765,10 +765,10 @@ match must select the items above (test your regexes mentally against them).`;
       });
     }
 
-    if (u.pathname === '/calc.js') {
-      // lib/calc.js is dual-environment: node tests require() it, the browser
-      // loads it here (single source, no build step)
-      return fs.readFile(path.join(HERE, 'lib', 'calc.js'), (err, buf) => {
+    if (u.pathname === '/calc.js' || u.pathname === '/md.js') {
+      // lib/calc.js and lib/md.js are dual-environment: node tests require()
+      // them, the browser loads them here (single source, no build step)
+      return fs.readFile(path.join(HERE, 'lib', u.pathname.slice(1)), (err, buf) => {
         if (err) { res.writeHead(404); return res.end(); }
         res.writeHead(200, { 'Content-Type': 'text/javascript', 'Cache-Control': 'no-cache' });
         res.end(buf);
